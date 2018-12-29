@@ -42,16 +42,24 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="BuildManager.cs" />
+    <Compile Include="BuildMode.cs" />
+    <Compile Include="Button.cs" />
     <Compile Include="Camera.cs" />
     <Compile Include="ContentChest.cs" />
+    <Compile Include="ElementSettings.cs" />
+    <Compile Include="ElementType.cs" />
     <Compile Include="GameManager.cs" />
     <Compile Include="InputManager.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Screen.cs" />
+    <Compile Include="SoundManager.cs" />
     <Compile Include="Tile.cs" />
     <Compile Include="TileType.cs" />
+    <Compile Include="UIElement.cs" />
+    <Compile Include="UIManager.cs" />
     <Compile Include="World.cs" />
   </ItemGroup>
   <ItemGroup>

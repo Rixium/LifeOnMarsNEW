@@ -27,12 +27,19 @@ namespace LoM
 
         public ContentChest ContentChest;
 
+        public SoundManager SoundManager;
         public InputManager InputManager;
+        public UIManager UIManager;
+        public BuildManager BuildManager;
+
         public World World;
         
         private readonly List<Tile> _buildTiles = new List<Tile>();
         private const float JobTime = 0.2f;
         private float _currentJobTime;
+
+        public Action OnJobFinished;
+        public Action<Tile> OnTileChanged;
 
         public GameManager(ContentChest contentChest)
         {
@@ -45,12 +52,21 @@ namespace LoM
             InputManager.RegisterOnKeyDown(Keys.S, MoveCamera);
             InputManager.RegisterOnKeyDown(Keys.A, MoveCamera);
             InputManager.RegisterOnKeyDown(Keys.D, MoveCamera);
+            InputManager.RegisterOnKeyDown(Keys.Up, MoveCamera);
+            InputManager.RegisterOnKeyDown(Keys.Down, MoveCamera);
+            InputManager.RegisterOnKeyDown(Keys.Left, MoveCamera);
+            InputManager.RegisterOnKeyDown(Keys.Right, MoveCamera);
             InputManager.RegisterOnKeyPress(Keys.OemPeriod, MoveCamera);
             InputManager.RegisterOnKeyPress(Keys.OemComma, MoveCamera);
-
             InputManager.RegisterOnKeyPress(Keys.Space, ToggleGrid);
+
             InputManager.MouseHeld += OnMouseHeld;
             InputManager.MouseReleased += OnMouseReleased;
+
+            BuildManager = new BuildManager(this, InputManager);
+            UIManager = new UIManager(this, InputManager, BuildManager);
+
+            SoundManager = new SoundManager(this, BuildManager);
 
             MediaPlayer.Volume = 0.25f;
             MediaPlayer.Play(ContentChest.MainMusic);
@@ -65,6 +81,8 @@ namespace LoM
 
         private void OnMouseHeld()
         {
+            if (BuildManager.GetMode() != BuildMode.Tile) return;
+
             if (_dragging)
             {
                 ContinueDrag();
@@ -125,6 +143,7 @@ namespace LoM
         private void ChangeTiles()
         {
             if (_hoverTiles == null || _hoverTiles.Count == 0) return;
+
             foreach (var tile in _hoverTiles)
             {
                 _buildTiles.Add(tile);
@@ -160,23 +179,21 @@ namespace LoM
 
         private void MoveCamera(Keys key)
         {
-            if (key == Keys.W)
+            if (key == Keys.W || key == Keys.Up)
                 Camera.Move(0, -10);
-            else if (key == Keys.A)
+            else if (key == Keys.A || key == Keys.Left)
                 Camera.Move(-10, 0);
-            else if (key == Keys.D)
+            else if (key == Keys.D || key == Keys.Right)
                 Camera.Move(10, 0);
-            else if (key == Keys.S) Camera.Move(0, 10);
+            else if (key == Keys.S || key == Keys.Down) Camera.Move(0, 10);
             else if (key == Keys.OemPeriod) Camera.Zoom(1);
             else if (key == Keys.OemComma) Camera.Zoom(-1);
         }
 
         private void SetupCamera()
         {
-            // TODO MOVE SCALE TO INSIDE CAMERA
-            int cameraScale = 2;
-            var centerX = (MapWidth * TileSize) / 2 + Screen.Width / 2 / cameraScale;
-            var centerY = (MapHeight * TileSize) / 2 + Screen.Height / 2 / cameraScale;
+            var centerX = (MapWidth * TileSize) / 2;
+            var centerY = (MapHeight * TileSize) / 2;
             Camera = new Camera(centerX, centerY);
         }
 
@@ -198,10 +215,10 @@ namespace LoM
             var buildTile = _buildTiles[0];
             _buildTiles.Remove(buildTile);
             buildTile.Type = TileType.Ground;
-            ContentChest.BuildSound.Play();
+            OnTileChanged?.Invoke(buildTile);
 
             if (_buildTiles.Count == 0)
-                ContentChest.SuccessSound.Play();
+                OnJobFinished?.Invoke();
         }
 
         public Tile GetTileAt(int x, int y)
@@ -211,6 +228,13 @@ namespace LoM
 
         public void Draw(SpriteBatch spriteBatch)
         {
+            DrawWorld(spriteBatch);
+            DrawUI(spriteBatch);
+        }
+
+        private void DrawWorld(SpriteBatch spriteBatch)
+        {
+
             var renderStartX = (Camera.X - Screen.Height) / TileSize - 1;
             var renderStartY = (Camera.Y - Screen.Width) / TileSize - 1;
             var renderEndX = (Camera.X + Screen.Width) / TileSize + 1;
@@ -249,6 +273,7 @@ namespace LoM
                 }
             }
 
+
             var mouseX = Mouse.GetState().X;
             var mouseY = Mouse.GetState().Y;
 
@@ -259,16 +284,30 @@ namespace LoM
                     Color.White);
 
             spriteBatch.End();
-
-            DrawUI(spriteBatch);
         }
 
         private void DrawUI(SpriteBatch spriteBatch)
         {
-            if (_buildTiles.Count == 0) return;
             spriteBatch.Begin();
-            spriteBatch.DrawString(ContentChest.MainFont, $"Jobs: { _buildTiles.Count }", new Vector2(10, 10), Color.White);
+
+            if (_buildTiles.Count != 0)
+                spriteBatch.DrawString(ContentChest.MainFont, $"Jobs: { _buildTiles.Count }", new Vector2(10, 10), Color.White);
+
+            foreach (var element in UIManager.UIElements)
+            {
+                if (element.Type() != ElementType.Button) continue;
+
+                var button = (Button) element;
+                var buttonText = button.Text;
+                var buttonPosition = button.GetTextPosition();
+                var settings = button.GetSettings();
+
+                spriteBatch.Draw(ContentChest.Pixel, button.GetBounds(), settings.BackgroundColor);
+                spriteBatch.DrawString(ContentChest.MainFont, buttonText, buttonPosition, settings.ForegroundColor);
+            }
+
             spriteBatch.End();
         }
+
     }
 }

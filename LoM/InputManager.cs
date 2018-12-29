@@ -23,6 +23,10 @@ namespace LoM
 
         public Action MouseHeld;
         public Action MouseReleased;
+        public Action MouseClick;
+
+        private Dictionary<UIElement, Action> _elementMap = new Dictionary<UIElement, Action>();
+        
 
         public class ActionMap
         {
@@ -97,16 +101,38 @@ namespace LoM
             if (_currentMouseState.LeftButton == ButtonState.Pressed)
                 OnMouseLeftDown(deltaTime);
             else if (_lastMouseState.LeftButton == ButtonState.Pressed)
-                OnMouseClicked(deltaTime);
+                OnMouseReleased(deltaTime);
             
         }
 
-        private void OnMouseClicked(float deltaTime)
+        private void OnMouseReleased(float deltaTime)
         {
-            Console.WriteLine("Mouse Clicked!");
-            _holdTime = 0;
+            if (_holdTime < RequiredHoldTime)
+            {
+                OnMouseClick();
+            }
 
             MouseReleased?.Invoke();
+
+            _holdTime = 0;
+        }
+
+        private void OnMouseClick()
+        {
+            var mouseState = _currentMouseState;
+            var mouse = new Rectangle(mouseState.X, mouseState.Y, 1, 1);
+
+            foreach (var keySet in _elementMap)
+            {
+                var element = keySet.Key;
+
+                if (!element.CollidesWith(mouse)) continue;
+
+                keySet.Value.Invoke();
+                return;
+            }
+
+            MouseClick?.Invoke();
         }
 
         private void OnMouseLeftDown(float deltaTime)
@@ -119,7 +145,25 @@ namespace LoM
 
         private void OnMouseHeld()
         {
+            var mouseState = _currentMouseState;
+            var mouse = new Rectangle(mouseState.X, mouseState.Y, 1, 1);
+
+            foreach (var keySet in _elementMap)
+            {
+                var element = keySet.Key;
+
+                if (!element.CollidesWith(mouse)) continue;
+
+                keySet.Value.Invoke();
+                return;
+            }
+
             MouseHeld?.Invoke();
+        }
+
+        public void RegisterUIElement(Action onElementClick, UIElement element)
+        {
+            _elementMap.Add(element, onElementClick);
         }
 
     }

@@ -15,6 +15,7 @@ namespace LoM
 
         public Texture2D Reticle;
         public Texture2D HoverSquare;
+        public Texture2D Pixel;
         public Texture2D GridSquare;
 
         public SoundEffect BuildSound;
@@ -35,6 +36,7 @@ namespace LoM
             TileTextures.Add(TileType.None, _content.Load<Texture2D>("Tile/none"));
 
 
+            Pixel = _content.Load<Texture2D>("pixel");
             Reticle = _content.Load<Texture2D>("UI/reticle");
             HoverSquare = _content.Load<Texture2D>("UI/hover");
             GridSquare = _content.Load<Texture2D>("UI/grid");
