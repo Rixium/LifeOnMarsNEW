@@ -24,6 +24,7 @@ namespace LoM
         public Action MouseHeld;
         public Action MouseReleased;
         public Action MouseClick;
+        public Action RightClick;
 
         private Dictionary<UIElement, Action> _elementMap = new Dictionary<UIElement, Action>();
         
@@ -41,6 +42,7 @@ namespace LoM
             _gameManager = gameManager;
             _camera = gameManager.Camera;
         }
+
 
         public void RegisterOnKeyDown(Keys key, Action<Keys> controlAction)
         {
@@ -102,7 +104,22 @@ namespace LoM
                 OnMouseLeftDown(deltaTime);
             else if (_lastMouseState.LeftButton == ButtonState.Pressed)
                 OnMouseReleased(deltaTime);
-            
+
+            if (_currentMouseState.RightButton == ButtonState.Pressed)
+                OnMouseRightDown(deltaTime);
+            else if (_lastMouseState.RightButton == ButtonState.Pressed)
+                OnMouseRightReleased(deltaTime);
+
+        }
+
+        private void OnMouseRightReleased(float deltaTime)
+        {
+            RightClick?.Invoke();
+        }
+
+        private void OnMouseRightDown(float deltaTime)
+        {
+            RightClick?.Invoke();
         }
 
         private void OnMouseReleased(float deltaTime)

@@ -13,7 +13,7 @@
 
             buildManager.OnBuildModeChange += UIInteraction;
             gameManager.OnTileChanged += TileChanged;
-            gameManager.OnJobFinished += JobComplete;
+            gameManager.OnJobsComplete += JobComplete;
         }
 
         private void JobComplete()

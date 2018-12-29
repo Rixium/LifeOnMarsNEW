@@ -15,7 +15,7 @@ namespace LoM
         private readonly int TileSize = 32;
         private bool _dragging;
 
-        private List<Tile> _hoverTiles;
+        private List<Job> _activeJobs = new List<Job>();
 
         private bool _showGrid;
 
@@ -34,11 +34,9 @@ namespace LoM
 
         public World World;
         
-        private readonly List<Tile> _buildTiles = new List<Tile>();
-        private const float JobTime = 0.2f;
-        private float _currentJobTime;
+        private List<Tile> _buildTiles = new List<Tile>();
 
-        public Action OnJobFinished;
+        public Action OnJobsComplete;
         public Action<Tile> OnTileChanged;
 
         public GameManager(ContentChest contentChest)
@@ -61,6 +59,7 @@ namespace LoM
             InputManager.RegisterOnKeyPress(Keys.Space, ToggleGrid);
 
             InputManager.MouseHeld += OnMouseHeld;
+            InputManager.RightClick += OnMouseRightClick;
             InputManager.MouseReleased += OnMouseReleased;
 
             BuildManager = new BuildManager(this, InputManager);
@@ -81,8 +80,31 @@ namespace LoM
 
         private void OnMouseHeld()
         {
-            if (BuildManager.GetMode() != BuildMode.Tile) return;
+            if (BuildManager.GetMode() == BuildMode.Tile)
+                BuildTiles();
+        }
 
+        private void OnMouseRightClick()
+        {
+            var tile = GetTileAtMouse(Mouse.GetState().X, Mouse.GetState().Y);
+            if (tile == null) return;
+            CancelTileJob(tile);
+        }
+
+        private void CancelTileJob(Tile tile)
+        {
+            foreach (var job in _activeJobs)
+            {
+                if (job.Tile != tile) continue;
+
+                job.Cancel();
+                _activeJobs.Remove(job);
+                return;
+            }
+        }
+
+        private void BuildTiles()
+        {
             if (_dragging)
             {
                 ContinueDrag();
@@ -99,7 +121,6 @@ namespace LoM
             _tileXStartDrag = tile.X;
             _tileYStartDrag = tile.Y;
         }
-
 
         private Tile GetTileAtMouse(float mouseX, float mouseY)
         {
@@ -136,23 +157,43 @@ namespace LoM
         private void EndDrag()
         {
             _dragging = false;
-            ChangeTiles();
-            _hoverTiles = null;
+            CreateJobs();
+            _buildTiles = null;
         }
 
-        private void ChangeTiles()
+        private void CreateJobs()
         {
-            if (_hoverTiles == null || _hoverTiles.Count == 0) return;
+            if (_buildTiles == null || _buildTiles.Count == 0) return;
 
-            foreach (var tile in _hoverTiles)
+            foreach (var tile in _buildTiles)
             {
-                _buildTiles.Add(tile);
+                var job = new Job
+                {
+                    RequiredJobTime = 0.2f,
+                    Tile = tile,
+                    OnJobComplete = JobComplete
+                };
+                _activeJobs.Add(job);
             }
+        }
+
+        private void JobComplete(Job job)
+        {
+            var jobTile = job.Tile;
+            _activeJobs.Remove(job);
+
+            if (job.Cancelled) return;
+
+            jobTile.Type = TileType.Ground;
+            OnTileChanged?.Invoke(jobTile);
+
+            if (_activeJobs.Count == 0)
+                OnJobsComplete?.Invoke();
         }
 
         private void SelectTilesInRange(int xStart, int yStart, int xEnd, int yEnd)
         {
-            _hoverTiles = new List<Tile>();
+            _buildTiles = new List<Tile>();
 
             if (xStart > xEnd)
             {
@@ -173,7 +214,7 @@ namespace LoM
             {
                 var tile = GetTileAt(x, y);
                 if (tile == null || tile.Type != TileType.None) continue;
-                _hoverTiles.Add(tile);
+                _buildTiles.Add(tile);
             }
         }
 
@@ -201,24 +242,17 @@ namespace LoM
         {
             InputManager.Update(deltaTime);
 
-            if (_buildTiles.Count != 0)
+            if (_activeJobs.Count != 0)
                 DoJob(deltaTime);
         }
 
         private void DoJob(float deltaTime)
         {
-            _currentJobTime += deltaTime;
+            var currentJob = _activeJobs[0];
+            currentJob.DoWork(deltaTime);
 
-            if (_currentJobTime < JobTime) return;
-
-            _currentJobTime = 0;
-            var buildTile = _buildTiles[0];
-            _buildTiles.Remove(buildTile);
-            buildTile.Type = TileType.Ground;
-            OnTileChanged?.Invoke(buildTile);
-
-            if (_buildTiles.Count == 0)
-                OnJobFinished?.Invoke();
+            if (currentJob.Cancelled)
+                currentJob.OnJobComplete(currentJob);
         }
 
         public Tile GetTileAt(int x, int y)
@@ -259,15 +293,18 @@ namespace LoM
                         Color.White);
             }
 
-            if (_hoverTiles != null)
-                foreach (var tile in _hoverTiles)
+            if (_buildTiles != null)
+                foreach (var tile in _buildTiles)
                     spriteBatch.Draw(ContentChest.Reticle, new Vector2(tile.X * TileSize, tile.Y * TileSize),
                         Color.White);
 
-            if (_buildTiles.Count > 0)
+            if (_activeJobs.Count > 0)
             {
-                foreach (var tile in new List<Tile>(_buildTiles))
+                foreach (var job in new List<Job>(_activeJobs))
                 {
+                    if (job.Cancelled) continue;
+
+                    var tile = job.Tile;
                     spriteBatch.Draw(ContentChest.TileTextures[TileType.Ground], new Vector2(tile.X * TileSize, tile.Y * TileSize),
                         Color.White * 0.5f);
                 }
@@ -290,8 +327,14 @@ namespace LoM
         {
             spriteBatch.Begin();
 
-            if (_buildTiles.Count != 0)
-                spriteBatch.DrawString(ContentChest.MainFont, $"Jobs: { _buildTiles.Count }", new Vector2(10, 10), Color.White);
+            if (_activeJobs.Count != 0)
+            {
+                var jobString = $"{ _activeJobs.Count } Jobs";
+                var measurements = ContentChest.MainFont.MeasureString(jobString);
+
+                spriteBatch.DrawString(ContentChest.MainFont, jobString, new Vector2(Screen.Width - 10 - measurements.X, 10),
+                    Color.White);
+            }
 
             foreach (var element in UIManager.UIElements)
             {
