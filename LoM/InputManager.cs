@@ -18,7 +18,7 @@ namespace LoM
         private MouseState _lastMouseState;
         private MouseState _currentMouseState;
         private float _holdTime; // Holds the total number of milliseconds that the mouse button has been held down for.
-        private const float RequiredHoldTime = 0.05f; // Represents how long the mouse button needs to be held down to trigger an onHold event.
+        private const float RequiredHoldTime = 0.1f; // Represents how long the mouse button needs to be held down to trigger an onHold event.
 
 
         public Action MouseHeld;

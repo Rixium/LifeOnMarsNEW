@@ -25,6 +25,7 @@ namespace LoM
 
         protected override void Initialize()
         {
+            Window.Title = "Life on Mars";
             IsMouseVisible = true;
             base.Initialize();
         }
@@ -53,6 +54,8 @@ namespace LoM
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(new Color(132, 56, 56));
+
+            GraphicsDevice.Clear(Color.Black);
             _gameManager.Draw(_spriteBatch);
             base.Draw(gameTime);
         }

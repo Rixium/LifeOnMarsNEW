@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -10,28 +9,26 @@ namespace LoM
 {
     public class GameManager
     {
+        private readonly int MapHeight = 32;
 
-        public InputManager InputManager;
-
-        private readonly int MapWidth = 100;
-        private readonly int MapHeight = 100;
+        private readonly int MapWidth = 32;
         private readonly int TileSize = 32;
-
-        public Camera Camera { get; private set; }
-        
-        public ContentChest ContentChest;
-        public World World;
-
-        private int _tileXStartDrag;
-        private int _tileYStartDrag;
-
-        private int _tileXEndDrag;
-        private int _tileYEndDrag;
         private bool _dragging;
+
+        private List<Tile> _hoverTiles;
 
         private bool _showGrid;
 
-        private List<Tile> _hoverTiles;
+        private int _tileXEndDrag;
+
+        private int _tileXStartDrag;
+        private int _tileYEndDrag;
+        private int _tileYStartDrag;
+
+        public ContentChest ContentChest;
+
+        public InputManager InputManager;
+        public World World;
 
         public GameManager(ContentChest contentChest)
         {
@@ -44,6 +41,8 @@ namespace LoM
             InputManager.RegisterOnKeyDown(Keys.S, MoveCamera);
             InputManager.RegisterOnKeyDown(Keys.A, MoveCamera);
             InputManager.RegisterOnKeyDown(Keys.D, MoveCamera);
+            InputManager.RegisterOnKeyPress(Keys.OemPeriod, MoveCamera);
+            InputManager.RegisterOnKeyPress(Keys.OemComma, MoveCamera);
 
             InputManager.RegisterOnKeyPress(Keys.Space, ToggleGrid);
             InputManager.MouseHeld += OnMouseHeld;
@@ -52,6 +51,8 @@ namespace LoM
             MediaPlayer.Volume = 0.25f;
             MediaPlayer.Play(ContentChest.MainMusic);
         }
+
+        public Camera Camera { get; private set; }
 
         private void ToggleGrid(Keys key)
         {
@@ -78,10 +79,15 @@ namespace LoM
         }
 
 
-        private Tile GetTileAtMouse(int mouseX, int mouseY)
+        private Tile GetTileAtMouse(float mouseX, float mouseY)
         {
-            var tileX = (int)Math.Floor((decimal)(mouseX - Camera.X) / 32);
-            var tileY = (int)Math.Floor((decimal)(mouseY - Camera.Y) / 32);
+            var worldPosition = Camera.ScreenToWorld(new Vector2(mouseX, mouseY));
+            mouseX = worldPosition.X;
+            mouseY = worldPosition.Y;
+
+            var tileX = (int) Math.Floor((decimal) (mouseX)) / TileSize;
+            var tileY = (int) Math.Floor((decimal) (mouseY)) / TileSize;
+            
             return GetTileAt(tileX, tileY);
         }
 
@@ -90,7 +96,7 @@ namespace LoM
             _tileXEndDrag = Mouse.GetState().X;
             _tileYEndDrag = Mouse.GetState().Y;
             var tile = GetTileAtMouse(_tileXEndDrag, _tileYEndDrag);
-            
+
             if (tile == null) return;
 
             _tileXEndDrag = tile.X;
@@ -115,10 +121,7 @@ namespace LoM
         private void ChangeTiles()
         {
             if (_hoverTiles == null || _hoverTiles.Count == 0) return;
-            foreach (var tile in _hoverTiles)
-            {
-                tile.Type = TileType.Ground;
-            }
+            foreach (var tile in _hoverTiles) tile.Type = TileType.Ground;
 
             ContentChest.BuildSound.Play();
         }
@@ -142,31 +145,33 @@ namespace LoM
             }
 
             for (var x = xStart; x <= xEnd; x++)
+            for (var y = yStart; y <= yEnd; y++)
             {
-                for (var y = yStart; y <= yEnd; y++)
-                {
-                    var tile = GetTileAt(x, y);
-                    if (tile == null || tile.Type != TileType.None) continue;
-                    _hoverTiles.Add(tile);
-                }
+                var tile = GetTileAt(x, y);
+                if (tile == null || tile.Type != TileType.None) continue;
+                _hoverTiles.Add(tile);
             }
         }
 
         private void MoveCamera(Keys key)
         {
             if (key == Keys.W)
-                Camera.Move(0, 10);
+                Camera.Move(0, -10);
             else if (key == Keys.A)
-                Camera.Move(10, 0);
-            else if (key == Keys.D)
                 Camera.Move(-10, 0);
-            else if (key == Keys.S) Camera.Move(0, -10);
+            else if (key == Keys.D)
+                Camera.Move(10, 0);
+            else if (key == Keys.S) Camera.Move(0, 10);
+            else if (key == Keys.OemPeriod) Camera.Zoom(1);
+            else if (key == Keys.OemComma) Camera.Zoom(-1);
         }
-        
+
         private void SetupCamera()
         {
-            var centerX = -(MapWidth * TileSize) / 2 + Screen.Width / 2;
-            var centerY = -(MapHeight * TileSize) / 2 + Screen.Height / 2;
+            // TODO MOVE SCALE TO INSIDE CAMERA
+            int cameraScale = 2;
+            var centerX = (MapWidth * TileSize) / 2 + Screen.Width / 2 / cameraScale;
+            var centerY = (MapHeight * TileSize) / 2 + Screen.Height / 2 / cameraScale;
             Camera = new Camera(centerX, centerY);
         }
 
@@ -182,36 +187,34 @@ namespace LoM
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            var renderStartX = (-(Camera.X) / TileSize) - 1;
-            var renderStartY = (-(Camera.Y) / TileSize) - 1;
-            var renderEndX = ((-(Camera.X) + Screen.Width) / TileSize) + 1;
-            var renderEndY = ((-(Camera.Y) + Screen.Height) / TileSize) + 1;
+            var renderStartX = (Camera.X - Screen.Height) / TileSize - 1;
+            var renderStartY = (Camera.Y - Screen.Width) / TileSize - 1;
+            var renderEndX = (Camera.X + Screen.Width) / TileSize + 1;
+            var renderEndY = (Camera.Y + Screen.Height) / TileSize + 1;
 
             renderStartX = MathHelper.Clamp(renderStartX, 0, MapWidth);
             renderStartY = MathHelper.Clamp(renderStartY, 0, MapHeight);
             renderEndX = MathHelper.Clamp(renderEndX, 0, MapWidth);
             renderEndY = MathHelper.Clamp(renderEndY, 0, MapHeight);
 
-            spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, Camera.Get());
+            spriteBatch.Begin(SpriteSortMode.Immediate, null, SamplerState.PointClamp, null, null, null, Camera.Get());
 
             for (var i = renderStartX; i < renderEndX; i++)
             for (var j = renderStartY; j < renderEndY; j++)
             {
                 var tile = World.Tiles[i, j];
-                spriteBatch.Draw(ContentChest.TileTextures[tile.Type], new Vector2(tile.X * 32, tile.Y * 32),
+                spriteBatch.Draw(ContentChest.TileTextures[tile.Type], new Vector2(tile.X * TileSize, tile.Y * TileSize),
                     Color.White);
 
-                if(_showGrid)
-                    spriteBatch.Draw(ContentChest.GridSquare, new Vector2(tile.X * 32, tile.Y * 32),
+                if (_showGrid)
+                    spriteBatch.Draw(ContentChest.GridSquare, new Vector2(tile.X * TileSize, tile.Y * TileSize),
                         Color.White);
             }
 
-            if(_hoverTiles != null)
+            if (_hoverTiles != null)
                 foreach (var tile in _hoverTiles)
-                {
-                    spriteBatch.Draw(ContentChest.Reticle, new Vector2(tile.X * 32, tile.Y * 32),
+                    spriteBatch.Draw(ContentChest.Reticle, new Vector2(tile.X * TileSize, tile.Y * TileSize),
                         Color.White);
-                }
 
             var mouseX = Mouse.GetState().X;
             var mouseY = Mouse.GetState().Y;
@@ -219,13 +222,10 @@ namespace LoM
             var mouseTile = GetTileAtMouse(mouseX, mouseY);
 
             if (mouseTile != null)
-            {
-                spriteBatch.Draw(ContentChest.HoverSquare, new Vector2(mouseTile.X * 32, mouseTile.Y * 32),
+                spriteBatch.Draw(ContentChest.HoverSquare, new Vector2(mouseTile.X * TileSize, mouseTile.Y * TileSize),
                     Color.White);
-            }
 
             spriteBatch.End();
         }
-
     }
 }
