@@ -29,6 +29,10 @@ namespace LoM
 
         public InputManager InputManager;
         public World World;
+        
+        private readonly List<Tile> _buildTiles = new List<Tile>();
+        private const float JobTime = 0.2f;
+        private float _currentJobTime;
 
         public GameManager(ContentChest contentChest)
         {
@@ -121,9 +125,10 @@ namespace LoM
         private void ChangeTiles()
         {
             if (_hoverTiles == null || _hoverTiles.Count == 0) return;
-            foreach (var tile in _hoverTiles) tile.Type = TileType.Ground;
-
-            ContentChest.BuildSound.Play();
+            foreach (var tile in _hoverTiles)
+            {
+                _buildTiles.Add(tile);
+            }
         }
 
         private void SelectTilesInRange(int xStart, int yStart, int xEnd, int yEnd)
@@ -178,6 +183,25 @@ namespace LoM
         public void Update(float deltaTime)
         {
             InputManager.Update(deltaTime);
+
+            if (_buildTiles.Count != 0)
+                DoJob(deltaTime);
+        }
+
+        private void DoJob(float deltaTime)
+        {
+            _currentJobTime += deltaTime;
+
+            if (_currentJobTime < JobTime) return;
+
+            _currentJobTime = 0;
+            var buildTile = _buildTiles[0];
+            _buildTiles.Remove(buildTile);
+            buildTile.Type = TileType.Ground;
+            ContentChest.BuildSound.Play();
+
+            if (_buildTiles.Count == 0)
+                ContentChest.SuccessSound.Play();
         }
 
         public Tile GetTileAt(int x, int y)
@@ -216,6 +240,15 @@ namespace LoM
                     spriteBatch.Draw(ContentChest.Reticle, new Vector2(tile.X * TileSize, tile.Y * TileSize),
                         Color.White);
 
+            if (_buildTiles.Count > 0)
+            {
+                foreach (var tile in new List<Tile>(_buildTiles))
+                {
+                    spriteBatch.Draw(ContentChest.TileTextures[TileType.Ground], new Vector2(tile.X * TileSize, tile.Y * TileSize),
+                        Color.White * 0.5f);
+                }
+            }
+
             var mouseX = Mouse.GetState().X;
             var mouseY = Mouse.GetState().Y;
 
@@ -225,6 +258,16 @@ namespace LoM
                 spriteBatch.Draw(ContentChest.HoverSquare, new Vector2(mouseTile.X * TileSize, mouseTile.Y * TileSize),
                     Color.White);
 
+            spriteBatch.End();
+
+            DrawUI(spriteBatch);
+        }
+
+        private void DrawUI(SpriteBatch spriteBatch)
+        {
+            if (_buildTiles.Count == 0) return;
+            spriteBatch.Begin();
+            spriteBatch.DrawString(ContentChest.MainFont, $"Jobs: { _buildTiles.Count }", new Vector2(10, 10), Color.White);
             spriteBatch.End();
         }
     }

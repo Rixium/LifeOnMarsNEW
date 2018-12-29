@@ -11,11 +11,14 @@ namespace LoM
 
         private ContentManager _content;
 
+        public SpriteFont MainFont;
+
         public Texture2D Reticle;
         public Texture2D HoverSquare;
         public Texture2D GridSquare;
 
         public SoundEffect BuildSound;
+        public SoundEffect SuccessSound;
         public Song MainMusic;
 
         public Dictionary<TileType, Texture2D> TileTextures = new Dictionary<TileType, Texture2D>();
@@ -37,7 +40,11 @@ namespace LoM
             GridSquare = _content.Load<Texture2D>("UI/grid");
 
             BuildSound = _content.Load<SoundEffect>("Sounds/build");
+            SuccessSound = _content.Load<SoundEffect>("Sounds/success");
+
             MainMusic = _content.Load<Song>("Music/music");
+
+            MainFont = _content.Load<SpriteFont>("Fonts/gameFont");
         }
     }
 }
