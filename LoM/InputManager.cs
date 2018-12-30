@@ -129,6 +129,12 @@ namespace LoM
                 OnMouseClick();
             }
 
+            foreach (var keySet in _elementMap)
+            {
+                var element = keySet.Key;
+                element.Release();
+            }
+
             MouseReleased?.Invoke();
 
             _holdTime = 0;
@@ -144,7 +150,8 @@ namespace LoM
                 var element = keySet.Key;
 
                 if (!element.CollidesWith(mouse)) continue;
-
+                
+                element.Click();
                 keySet.Value.Invoke();
                 return;
             }
@@ -171,6 +178,7 @@ namespace LoM
 
                 if (!element.CollidesWith(mouse)) continue;
 
+                element.Click();
                 keySet.Value.Invoke();
                 return;
             }

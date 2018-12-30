@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace LoM
 {
@@ -8,5 +9,9 @@ namespace LoM
         public int Padding;
         public Color BackgroundColor;
         public Color ForegroundColor;
+
+        public Texture2D ImageOff;
+        public Texture2D ImagePressed;
+
     }
 }

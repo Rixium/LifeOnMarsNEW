@@ -37,6 +37,14 @@ namespace LoM
             return BuildMode;
         }
 
+        public void SetDestroyMode()
+        {
+            if (BuildMode == BuildMode.Destroy) return;
+
+            SetMode(BuildMode.Destroy);
+            OnBuildModeChange?.Invoke();
+        }
+
         public void ClearMode()
         {
             if (BuildMode == BuildMode.None) return;

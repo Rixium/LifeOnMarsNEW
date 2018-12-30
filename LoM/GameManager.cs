@@ -63,12 +63,11 @@ namespace LoM
             InputManager.MouseReleased += OnMouseReleased;
 
             BuildManager = new BuildManager(this, InputManager);
-            UIManager = new UIManager(this, InputManager, BuildManager);
-
             SoundManager = new SoundManager(this, BuildManager);
+            UIManager = new UIManager(this, InputManager, BuildManager, SoundManager);
 
             MediaPlayer.Volume = 0.25f;
-            MediaPlayer.Play(ContentChest.MainMusic);
+            //MediaPlayer.Play(ContentChest.MainMusic);
         }
 
         public Camera Camera { get; private set; }
@@ -80,8 +79,14 @@ namespace LoM
 
         private void OnMouseHeld()
         {
-            if (BuildManager.GetMode() == BuildMode.Tile)
+            if (BuildManager.GetMode() == BuildMode.Tile ||
+                BuildManager.GetMode() == BuildMode.Destroy)
                 BuildTiles();
+        }
+
+        private void DestroyTiles()
+        {
+
         }
 
         private void OnMouseRightClick()
@@ -167,12 +172,19 @@ namespace LoM
 
             foreach (var tile in _buildTiles)
             {
+                var jobType = JobType.Build;
+
+                if (BuildManager.GetMode() == BuildMode.Destroy)
+                    jobType = JobType.Destroy;
+
                 var job = new Job
                 {
+                    JobType = jobType,
                     RequiredJobTime = 0.2f,
                     Tile = tile,
                     OnJobComplete = JobComplete
                 };
+
                 _activeJobs.Add(job);
             }
         }
@@ -184,7 +196,11 @@ namespace LoM
 
             if (job.Cancelled) return;
 
-            jobTile.Type = TileType.Ground;
+            if(job.JobType == JobType.Build)
+                jobTile.Type = TileType.Ground;
+            else if (job.JobType == JobType.Destroy)
+                jobTile.Type = TileType.None;
+
             OnTileChanged?.Invoke(jobTile);
 
             if (_activeJobs.Count == 0)
@@ -213,7 +229,8 @@ namespace LoM
             for (var y = yStart; y <= yEnd; y++)
             {
                 var tile = GetTileAt(x, y);
-                if (tile == null || tile.Type != TileType.None) continue;
+                if (tile == null || tile.Type != TileType.None && BuildManager.BuildMode == BuildMode.Tile ||
+                tile.Type == TileType.None && BuildManager.BuildMode == BuildMode.Destroy) continue;
                 _buildTiles.Add(tile);
             }
         }
@@ -305,8 +322,12 @@ namespace LoM
                     if (job.Cancelled) continue;
 
                     var tile = job.Tile;
-                    spriteBatch.Draw(ContentChest.TileTextures[TileType.Ground], new Vector2(tile.X * TileSize, tile.Y * TileSize),
-                        Color.White * 0.5f);
+                    if(job.JobType == JobType.Build)
+                        spriteBatch.Draw(ContentChest.TileTextures[TileType.Ground], new Vector2(tile.X * TileSize, tile.Y * TileSize),
+                            Color.White * 0.5f);
+                    else if (job.JobType == JobType.Destroy)
+                        spriteBatch.Draw(ContentChest.Pixel, new Rectangle(tile.X * TileSize, tile.Y * TileSize, TileSize, TileSize),
+                            Color.Red * 0.15f);
                 }
             }
 
@@ -325,31 +346,7 @@ namespace LoM
 
         private void DrawUI(SpriteBatch spriteBatch)
         {
-            spriteBatch.Begin();
-
-            if (_activeJobs.Count != 0)
-            {
-                var jobString = $"{ _activeJobs.Count } Jobs";
-                var measurements = ContentChest.MainFont.MeasureString(jobString);
-
-                spriteBatch.DrawString(ContentChest.MainFont, jobString, new Vector2(Screen.Width - 10 - measurements.X, 10),
-                    Color.White);
-            }
-
-            foreach (var element in UIManager.UIElements)
-            {
-                if (element.Type() != ElementType.Button) continue;
-
-                var button = (Button) element;
-                var buttonText = button.Text;
-                var buttonPosition = button.GetTextPosition();
-                var settings = button.GetSettings();
-
-                spriteBatch.Draw(ContentChest.Pixel, button.GetBounds(), settings.BackgroundColor);
-                spriteBatch.DrawString(ContentChest.MainFont, buttonText, buttonPosition, settings.ForegroundColor);
-            }
-
-            spriteBatch.End();
+            UIManager.Draw(spriteBatch);
         }
 
     }

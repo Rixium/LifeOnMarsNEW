@@ -4,7 +4,7 @@
     {
         None,
         Tile,
-        WorldObject
-
+        WorldObject,
+        Destroy
     }
 }

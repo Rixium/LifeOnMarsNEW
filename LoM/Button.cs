@@ -1,27 +1,24 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace LoM
 {
     public class Button : UIElement
     {
-
-        public string Text;
+        
         public int X;
         public int Y;
-
-        public int TextX;
-        public int TextY;
+        
+        private bool _pressed;
 
         private Rectangle _rectangle;
         private readonly ElementSettings _settings;
-        
-        public SpriteFont Font;
 
-        public Button(SpriteFont font, string text, int x, int y, ElementSettings settings)
+        public Action<Button> OnClick;
+        
+        public Button(int x, int y, ElementSettings settings)
         {
-            Font = font;
-            Text = text;
             X = x;
             Y = y;
             _settings = settings;
@@ -31,18 +28,22 @@ namespace LoM
 
         private void CreateBounds()
         {
-            var textWidth = (int) Font.MeasureString(Text).X;
-            var textHeight = (int) Font.MeasureString(Text).Y;
-
-            TextX = X + _settings.Padding;
-            TextY = Y + _settings.Padding;
-
-            _rectangle = new Rectangle(X, Y, textWidth + (_settings.Padding * 2), textHeight + (_settings.Padding * 2));
+            var image = _settings.ImageOff;
+            _rectangle = new Rectangle(X, Y, image.Width, image.Height);
         }
 
         public ElementType Type()
         {
             return ElementType.Button;
+        }
+
+        public Texture2D Image
+        {
+            get
+            {
+                if (!_pressed) return _settings.ImageOff;
+                return _settings.ImagePressed;
+            }
         }
 
         public Vector2 GetPosition()
@@ -57,8 +58,17 @@ namespace LoM
 
         public void Click()
         {
-            
+            if(!_pressed)
+                OnClick?.Invoke(this);
+
+            _pressed = true;
         }
+
+        public void Release()
+        {
+            _pressed = false;
+        }
+
 
         public ElementSettings GetSettings()
         {
@@ -69,10 +79,6 @@ namespace LoM
         {
             return _rectangle;
         }
-
-        public Vector2 GetTextPosition()
-        {
-            return new Vector2(TextX, TextY);
-        }
+        
     }
 }

@@ -13,6 +13,7 @@ namespace LoM
 
         public Action<Job> OnJobComplete;
         public Action<Job> OnJobCancelled;
+        public JobType JobType { get; set; }
 
         public void DoWork(float deltaTime)
         {

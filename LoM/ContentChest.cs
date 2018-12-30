@@ -24,6 +24,12 @@ namespace LoM
 
         public Dictionary<TileType, Texture2D> TileTextures = new Dictionary<TileType, Texture2D>();
 
+        public Texture2D BuildButtonPressed;
+        public Texture2D BuildButtonOff;
+
+        public Texture2D DestroyButtonPressed;
+        public Texture2D DestroyButtonOff;
+
 
         public ContentChest(ContentManager content)
         {
@@ -47,6 +53,12 @@ namespace LoM
             MainMusic = _content.Load<Song>("Music/music");
 
             MainFont = _content.Load<SpriteFont>("Fonts/gameFont");
+
+            BuildButtonOff = _content.Load<Texture2D>("UI/Buttons/buildButton_Off");
+            BuildButtonPressed = _content.Load<Texture2D>("UI/Buttons/buildButton_Pressed");
+            DestroyButtonOff = _content.Load<Texture2D>("UI/Buttons/destroyButton_Off");
+            DestroyButtonPressed = _content.Load<Texture2D>("UI/Buttons/destroyButton_Pressed");
+
         }
     }
 }

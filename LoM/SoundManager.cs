@@ -10,23 +10,27 @@
         public SoundManager(GameManager gameManager, BuildManager buildManager)
         {
             _gameManager = gameManager;
-
-            buildManager.OnBuildModeChange += UIInteraction;
+            
             gameManager.OnTileChanged += TileChanged;
             gameManager.OnJobsComplete += JobComplete;
         }
 
-        private void JobComplete()
+        public void JobComplete()
         {
             ContentChest.SuccessSound.Play();
         }
 
-        private void TileChanged(Tile tile)
+        public void TileChanged(Tile tile)
         {
             ContentChest.BuildSound.Play();
         }
 
-        private void UIInteraction()
+        public void UIInteraction()
+        {
+            ContentChest.BuildSound.Play();
+        }
+
+        public void OnButtonClick(UIElement element)
         {
             ContentChest.BuildSound.Play();
         }

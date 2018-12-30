@@ -52,6 +52,7 @@
     <Compile Include="GameManager.cs" />
     <Compile Include="InputManager.cs" />
     <Compile Include="Job.cs" />
+    <Compile Include="JobType.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
