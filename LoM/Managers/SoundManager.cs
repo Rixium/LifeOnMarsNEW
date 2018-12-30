@@ -2,6 +2,7 @@
 using LoM.Game.Build;
 using LoM.UI;
 using LoM.Util;
+using Microsoft.Xna.Framework.Media;
 
 namespace LoM.Managers
 {
@@ -15,8 +16,6 @@ namespace LoM.Managers
         public SoundManager(GameManager gameManager, BuildManager buildManager)
         {
             _gameManager = gameManager;
-            
-            gameManager.OnTileChanged += TileChanged;
             gameManager.OnJobsComplete += JobComplete;
         }
 
@@ -38,6 +37,12 @@ namespace LoM.Managers
         public void OnButtonClick(UIElement element)
         {
             ContentChest.BuildSound.Play();
+        }
+
+        public void PlayMainTrack()
+        {
+            MediaPlayer.Volume = 0.1f;
+            MediaPlayer.Play(ContentChest.MainMusic);
         }
 
     }

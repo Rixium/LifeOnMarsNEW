@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using LoM.Constants;
 using LoM.Game;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -24,6 +25,7 @@ namespace LoM.Util
         public Song MainMusic;
 
         public Dictionary<TileType, Texture2D> TileTextures = new Dictionary<TileType, Texture2D>();
+        public Dictionary<ObjectType, Texture2D> WorldObjects = new Dictionary<ObjectType, Texture2D>();
 
         public Texture2D BuildButtonPressed;
         public Texture2D BuildButtonOff;
@@ -31,16 +33,21 @@ namespace LoM.Util
         public Texture2D DestroyButtonPressed;
         public Texture2D DestroyButtonOff;
 
+        public Texture2D WallButtonPressed;
+        public Texture2D WallButtonOff;
+
 
         public ContentChest(ContentManager content)
         {
             _content = content;
         }
-
+        
         public void Load()
         {
             TileTextures.Add(TileType.Ground, _content.Load<Texture2D>("Tile/ground"));
             TileTextures.Add(TileType.None, _content.Load<Texture2D>("Tile/none"));
+
+            WorldObjects.Add(ObjectType.Wall, _content.Load<Texture2D>("Objects/wall"));
 
 
             Pixel = _content.Load<Texture2D>("pixel");
@@ -59,6 +66,8 @@ namespace LoM.Util
             BuildButtonPressed = _content.Load<Texture2D>("UI/Buttons/buildButton_Pressed");
             DestroyButtonOff = _content.Load<Texture2D>("UI/Buttons/destroyButton_Off");
             DestroyButtonPressed = _content.Load<Texture2D>("UI/Buttons/destroyButton_Pressed");
+            WallButtonOff = _content.Load<Texture2D>("UI/Buttons/buildWall_Off");
+            WallButtonPressed = _content.Load<Texture2D>("UI/Buttons/buildWall_Pressed");
 
         }
     }

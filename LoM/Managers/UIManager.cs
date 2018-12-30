@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using LoM.Constants;
+using LoM.Game;
 using LoM.Game.Build;
 using LoM.UI;
 using LoM.Util;
@@ -54,8 +56,19 @@ namespace LoM.Managers
                 ImageOff = _gameManager.ContentChest.DestroyButtonOff
             };
 
-            button = new Button(10, button.X + button.GetBounds().Height + 10, buttonSettings);
+            button = new Button(10, button.Y + button.GetBounds().Height + 10, buttonSettings);
             _inputManager.RegisterUIElement(_buildManager.SetDestroyMode, button);
+            button.OnClick += _soundManager.OnButtonClick;
+            UIElements.Add(button);
+
+            buttonSettings = new ElementSettings()
+            {
+                ImagePressed = _gameManager.ContentChest.WallButtonPressed,
+                ImageOff = _gameManager.ContentChest.WallButtonOff
+            };
+
+            button = new Button(10, button.Y + button.GetBounds().Height + 10, buttonSettings);
+            _inputManager.RegisterUIElement(() => { _buildManager.SetBuildObject(ObjectType.Wall); }, button);
             button.OnClick += _soundManager.OnButtonClick;
             UIElements.Add(button);
         }

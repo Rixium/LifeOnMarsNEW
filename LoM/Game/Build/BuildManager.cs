@@ -1,4 +1,5 @@
 ﻿using System;
+using LoM.Constants;
 using LoM.Managers;
 
 namespace LoM.Game.Build
@@ -7,6 +8,7 @@ namespace LoM.Game.Build
     {
 
         public BuildMode BuildMode;
+        public ObjectType BuildObject;
 
         public Action OnBuildModeChange;
 
@@ -51,6 +53,14 @@ namespace LoM.Game.Build
             if (BuildMode == BuildMode.None) return;
 
             SetMode(BuildMode.None);
+            OnBuildModeChange?.Invoke();
+        }
+
+        public void SetBuildObject(ObjectType objectType)
+        {
+            if (BuildMode == BuildMode.WorldObject && objectType == BuildObject) return;
+            SetMode(BuildMode.WorldObject);
+            BuildObject = objectType;
             OnBuildModeChange?.Invoke();
         }
     }

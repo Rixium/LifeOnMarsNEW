@@ -42,10 +42,14 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Constants\ObjectType.cs" />
     <Compile Include="Game\Build\BuildManager.cs" />
     <Compile Include="Game\Build\BuildMode.cs" />
+    <Compile Include="Game\WorldObject.cs" />
+    <Compile Include="Managers\JobManager.cs" />
     <Compile Include="UI\Button.cs" />
     <Compile Include="Util\Camera.cs" />
+    <Compile Include="Util\CameraController.cs" />
     <Compile Include="Util\ContentChest.cs" />
     <Compile Include="UI\ElementSettings.cs" />
     <Compile Include="UI\ElementType.cs" />

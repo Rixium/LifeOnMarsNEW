@@ -1,5 +1,4 @@
-﻿using System;
-using LoM.Constants;
+﻿using LoM.Constants;
 using LoM.Managers;
 using LoM.Util;
 using Microsoft.Xna.Framework;
@@ -11,9 +10,9 @@ namespace LoM
     {
         private GameManager _gameManager;
         private GraphicsDeviceManager _graphics;
-        private SpriteBatch _spriteBatch;
 
         private float _lastUpdate;
+        private SpriteBatch _spriteBatch;
 
         public Main()
         {
