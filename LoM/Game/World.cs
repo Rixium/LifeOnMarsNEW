@@ -1,4 +1,4 @@
-﻿namespace LoM
+﻿namespace LoM.Game
 {
     public class World
     {

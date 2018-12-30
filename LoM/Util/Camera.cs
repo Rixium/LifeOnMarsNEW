@@ -1,12 +1,13 @@
-﻿using Microsoft.Xna.Framework;
+﻿using LoM.Constants;
+using Microsoft.Xna.Framework;
 
-namespace LoM
+namespace LoM.Util
 {
     public class Camera
     {
         public int X;
         public int Y;
-        public int Scale = 2;
+        public float Scale = 2;
         public int MaxZoom = 3;
 
 
@@ -33,7 +34,7 @@ namespace LoM
                 Matrix.CreateTranslation(new Vector3(ViewportCenter, 0));
         }
 
-        public void Zoom(int delta)
+        public void Zoom(float delta)
         {
             Scale += delta;
             Scale = MathHelper.Clamp(Scale, 1, MaxZoom);

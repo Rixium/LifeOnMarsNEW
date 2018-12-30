@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using LoM.Game;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
 
-namespace LoM
+namespace LoM.Util
 {
     public class ContentChest
     {

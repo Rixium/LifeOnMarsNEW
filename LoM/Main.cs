@@ -1,10 +1,13 @@
 ﻿using System;
+using LoM.Constants;
+using LoM.Managers;
+using LoM.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace LoM
 {
-    public class Main : Game
+    public class Main : Microsoft.Xna.Framework.Game
     {
         private GameManager _gameManager;
         private GraphicsDeviceManager _graphics;

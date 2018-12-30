@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using LoM.UI;
+using LoM.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-namespace LoM
+namespace LoM.Managers
 {
     public class InputManager
     {

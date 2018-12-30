@@ -1,4 +1,4 @@
-﻿namespace LoM
+﻿namespace LoM.UI
 {
     public enum ElementType
     {

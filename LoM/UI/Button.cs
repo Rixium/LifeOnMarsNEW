@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace LoM
+namespace LoM.UI
 {
     public class Button : UIElement
     {

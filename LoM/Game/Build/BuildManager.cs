@@ -1,6 +1,7 @@
 ﻿using System;
+using LoM.Managers;
 
-namespace LoM
+namespace LoM.Game.Build
 {
     public class BuildManager
     {

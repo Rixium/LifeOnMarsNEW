@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace LoM
+namespace LoM.Game.Job
 {
     public class Job
     {

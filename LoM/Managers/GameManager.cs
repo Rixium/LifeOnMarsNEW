@@ -1,18 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using LoM.Constants;
+using LoM.Game;
+using LoM.Game.Build;
+using LoM.Game.Job;
+using LoM.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 
-namespace LoM
+namespace LoM.Managers
 {
     public class GameManager
     {
-        private readonly int MapHeight = 32;
 
-        private readonly int MapWidth = 32;
-        private readonly int TileSize = 32;
+        private const int MapHeight = 32;
+        private const int MapWidth = 32;
+        private const int TileSize = 32;
+        private const float ZoomSpeed = 0.02f;
+        private const int CameraSpeed = 5;
+
         private bool _dragging;
 
         private List<Job> _activeJobs = new List<Job>();
@@ -54,8 +62,8 @@ namespace LoM
             InputManager.RegisterOnKeyDown(Keys.Down, MoveCamera);
             InputManager.RegisterOnKeyDown(Keys.Left, MoveCamera);
             InputManager.RegisterOnKeyDown(Keys.Right, MoveCamera);
-            InputManager.RegisterOnKeyPress(Keys.OemPeriod, MoveCamera);
-            InputManager.RegisterOnKeyPress(Keys.OemComma, MoveCamera);
+            InputManager.RegisterOnKeyDown(Keys.OemPeriod, MoveCamera);
+            InputManager.RegisterOnKeyDown(Keys.OemComma, MoveCamera);
             InputManager.RegisterOnKeyPress(Keys.Space, ToggleGrid);
 
             InputManager.MouseHeld += OnMouseHeld;
@@ -238,14 +246,14 @@ namespace LoM
         private void MoveCamera(Keys key)
         {
             if (key == Keys.W || key == Keys.Up)
-                Camera.Move(0, -10);
+                Camera.Move(0, -CameraSpeed);
             else if (key == Keys.A || key == Keys.Left)
-                Camera.Move(-10, 0);
+                Camera.Move(-CameraSpeed, 0);
             else if (key == Keys.D || key == Keys.Right)
-                Camera.Move(10, 0);
-            else if (key == Keys.S || key == Keys.Down) Camera.Move(0, 10);
-            else if (key == Keys.OemPeriod) Camera.Zoom(1);
-            else if (key == Keys.OemComma) Camera.Zoom(-1);
+                Camera.Move(CameraSpeed, 0);
+            else if (key == Keys.S || key == Keys.Down) Camera.Move(0, CameraSpeed);
+            else if (key == Keys.OemPeriod) Camera.Zoom(ZoomSpeed);
+            else if (key == Keys.OemComma) Camera.Zoom(-ZoomSpeed);
         }
 
         private void SetupCamera()

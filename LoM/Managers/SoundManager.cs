@@ -1,4 +1,9 @@
-﻿namespace LoM
+﻿using LoM.Game;
+using LoM.Game.Build;
+using LoM.UI;
+using LoM.Util;
+
+namespace LoM.Managers
 {
     public class SoundManager
     {

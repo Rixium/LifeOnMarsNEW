@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using LoM.Game.Build;
+using LoM.UI;
+using LoM.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace LoM
+namespace LoM.Managers
 {
     public class UIManager
     {

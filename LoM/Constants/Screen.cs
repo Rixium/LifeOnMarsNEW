@@ -1,4 +1,4 @@
-﻿namespace LoM
+﻿namespace LoM.Constants
 {
     public class Screen
     {

@@ -1,4 +1,4 @@
-﻿namespace LoM
+﻿namespace LoM.Game.Build
 {
     public enum BuildMode
     {
