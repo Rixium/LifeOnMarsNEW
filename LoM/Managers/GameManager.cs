@@ -226,16 +226,21 @@ namespace LoM.Managers
             for (var j = renderStartY; j < renderEndY; j++)
             {
                 var tile = World.Tiles[i, j];
-                spriteBatch.Draw(ContentChest.TileTextures[tile.Type],
-                    new Vector2(tile.X * TileSize, tile.Y * TileSize),
-                    Color.White);
 
-                if(tile.WorldObject != null)
-                    objects.Enqueue(tile);
-
-                if (_showGrid)
+                if (_showGrid && tile.Type != TileType.None)
                     spriteBatch.Draw(ContentChest.GridSquare, new Vector2(tile.X * TileSize, tile.Y * TileSize),
                         Color.White);
+
+                spriteBatch.Draw(ContentChest.TileTextures[tile.Type],
+                new Vector2(tile.X * TileSize, tile.Y * TileSize),
+                Color.White);
+
+                if (_showGrid && tile.Type == TileType.None)
+                    spriteBatch.Draw(ContentChest.GridSquare, new Vector2(tile.X * TileSize, tile.Y * TileSize),
+                        Color.White);
+
+                if (tile.WorldObject != null)
+                    objects.Enqueue(tile);
             }
 
             while (objects.Count > 0)

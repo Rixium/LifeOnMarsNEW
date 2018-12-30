@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using LoM.Constants;
-using LoM.Game;
 using LoM.Game.Build;
 using LoM.UI;
 using LoM.Util;
