@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using LoM.Constants;
 using LoM.Game;
 using LoM.Game.Build;
@@ -13,8 +14,8 @@ namespace LoM.Managers
 {
     public class GameManager
     {
-        private const int MapHeight = 32;
-        private const int MapWidth = 32;
+        private const int MapHeight = 100;
+        private const int MapWidth = 100;
         private const int TileSize = 32;
         
         private List<Tile> _buildTiles = new List<Tile>();
@@ -40,6 +41,8 @@ namespace LoM.Managers
         public UIManager UIManager;
 
         public World World;
+
+        private readonly StringBuilder _stringBuilder = new StringBuilder(4);
 
         public Camera Camera { get; private set; }
         public CameraController CameraController;
@@ -286,17 +289,42 @@ namespace LoM.Managers
 
         private void DrawWorldObject(SpriteBatch spriteBatch, WorldObject worldObject)
         {
-            var name = "Wall_EW";
+            var objectType = worldObject.ObjectType.ToString();
+            var name = $"{objectType}_";
 
             if (worldObject.MergesWithNeighbors)
             {
-                var neighborString = worldObject.GetNeighborString();
+                var neighborString = CreateNeighborString(worldObject);
                 if(!string.IsNullOrWhiteSpace(neighborString))
-                    name = $"Wall_{neighborString}";
+                    name = $"{objectType}_{neighborString}";
             }
             spriteBatch.Draw(ContentChest.WorldObjects[name],
                 new Vector2(worldObject.Tile.X * TileSize, worldObject.Tile.Y * TileSize),
                 Color.White);
+        }
+
+        private string CreateNeighborString(WorldObject worldObject)
+        {
+            _stringBuilder.Clear();
+
+            var tile = worldObject.Tile;
+            var tileX = tile.X;
+            var tileY = tile.Y;
+            var northTile = World.GetTileAt(tileX, tileY - 1);
+            var eastTile = World.GetTileAt(tileX + 1, tileY);
+            var southTile = World.GetTileAt(tileX, tileY + 1);
+            var westTile = World.GetTileAt(tileX - 1, tileY);
+
+            if (northTile?.WorldObject?.ObjectType == worldObject.ObjectType)
+                _stringBuilder.Append("N");
+            if (eastTile?.WorldObject?.ObjectType == worldObject.ObjectType)
+                _stringBuilder.Append("E");
+            if (southTile?.WorldObject?.ObjectType == worldObject.ObjectType)
+                _stringBuilder.Append("S");
+            if (westTile?.WorldObject?.ObjectType == worldObject.ObjectType)
+                _stringBuilder.Append("W");
+
+            return _stringBuilder.ToString();
         }
 
         private void DrawUI(SpriteBatch spriteBatch)

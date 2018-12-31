@@ -52,6 +52,7 @@ namespace LoM.Util
             var di = new DirectoryInfo(_content.RootDirectory + "/Objects");
             var files = di.GetFiles("*.xnb");
 
+            // Load in our objects from the correct folder and bind them to the dictionary.
             foreach (var file in files)
             {
                 var fileName = file.Name.Split('.')[0];

@@ -42,6 +42,7 @@ namespace LoM.Managers
         public void PlayMainTrack()
         {
             MediaPlayer.Volume = 0.1f;
+            MediaPlayer.IsRepeating = true;
             MediaPlayer.Play(ContentChest.MainMusic);
         }
 

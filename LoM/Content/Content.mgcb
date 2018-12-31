@@ -26,6 +26,18 @@
 /processorParam:Quality=Best
 /build:Music/music.mp3
 
+#begin Objects/Wall_.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Objects/Wall_.png
+
 #begin Objects/Wall_E.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -50,7 +62,7 @@
 /processorParam:TextureFormat=Color
 /build:Objects/Wall_ES.png
 
-#begin Objects/Wall_ES.png
+#begin Objects/Wall_ESW.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -60,19 +72,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Objects/Wall_ES.png
-
-#begin Objects/Wall_EW.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Objects/Wall_EW.png
+/build:Objects/Wall_ESW.png
 
 #begin Objects/Wall_EW.png
 /importer:TextureImporter
@@ -110,7 +110,7 @@
 /processorParam:TextureFormat=Color
 /build:Objects/Wall_NE.png
 
-#begin Objects/Wall_NE.png
+#begin Objects/Wall_NES.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -120,7 +120,31 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Objects/Wall_NE.png
+/build:Objects/Wall_NES.png
+
+#begin Objects/Wall_NESW.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Objects/Wall_NESW.png
+
+#begin Objects/Wall_NEW.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Objects/Wall_NEW.png
 
 #begin Objects/Wall_NS.png
 /importer:TextureImporter
@@ -134,7 +158,7 @@
 /processorParam:TextureFormat=Color
 /build:Objects/Wall_NS.png
 
-#begin Objects/Wall_NS.png
+#begin Objects/Wall_NSW.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -144,19 +168,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Objects/Wall_NS.png
-
-#begin Objects/Wall_NW.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Objects/Wall_NW.png
+/build:Objects/Wall_NSW.png
 
 #begin Objects/Wall_NW.png
 /importer:TextureImporter
@@ -181,18 +193,6 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Objects/Wall_S.png
-
-#begin Objects/Wall_SW.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Objects/Wall_SW.png
 
 #begin Objects/Wall_SW.png
 /importer:TextureImporter

@@ -74,7 +74,7 @@ namespace LoM.Managers
                 AddJob(new Job
                 {
                     JobType = JobType.Build,
-                    RequiredJobTime = 0.2f,
+                    RequiredJobTime = 0.02f,
                     Tile = tile,
                     OnJobComplete = JobComplete
                 });
