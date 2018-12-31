@@ -20,7 +20,7 @@ namespace LoM.Game
             for (var x = 0; x < width; x++)
             for (var y = 0; y < height; y++)
             {
-                Tiles[x, y] = new Tile(x, y)
+                Tiles[x, y] = new Tile(x, y, this)
                 {
                     OnTileChanged = TileChanged
                 };

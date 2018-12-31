@@ -247,9 +247,7 @@ namespace LoM.Managers
             {
                 var worldObject = objects.Dequeue().WorldObject;
 
-                spriteBatch.Draw(ContentChest.WorldObjects[worldObject.ObjectType],
-                    new Vector2(worldObject.Tile.X * TileSize, worldObject.Tile.Y * TileSize),
-                    Color.White);
+                DrawWorldObject(spriteBatch, worldObject);
             }
 
             if (_buildTiles != null)
@@ -284,6 +282,21 @@ namespace LoM.Managers
                     Color.White);
 
             spriteBatch.End();
+        }
+
+        private void DrawWorldObject(SpriteBatch spriteBatch, WorldObject worldObject)
+        {
+            var name = "Wall_EW";
+
+            if (worldObject.MergesWithNeighbors)
+            {
+                var neighborString = worldObject.GetNeighborString();
+                if(!string.IsNullOrWhiteSpace(neighborString))
+                    name = $"Wall_{neighborString}";
+            }
+            spriteBatch.Draw(ContentChest.WorldObjects[name],
+                new Vector2(worldObject.Tile.X * TileSize, worldObject.Tile.Y * TileSize),
+                Color.White);
         }
 
         private void DrawUI(SpriteBatch spriteBatch)

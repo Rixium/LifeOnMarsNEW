@@ -6,14 +6,16 @@ namespace LoM.Game
     {
         public TileType Type { get; private set; }
         public WorldObject WorldObject { get; private set; }
+        public World World { get; set; }
 
         public Action<Tile> OnTileChanged;
 
         public int X;
         public int Y;
 
-        public Tile(int x, int y)
+        public Tile(int x, int y, World world)
         {
+            World = world;
             X = x;
             Y = y;
             Type = TileType.None;

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using LoM.Constants;
 using LoM.Game;
 using Microsoft.Xna.Framework.Audio;
@@ -25,7 +27,7 @@ namespace LoM.Util
         public Song MainMusic;
 
         public Dictionary<TileType, Texture2D> TileTextures = new Dictionary<TileType, Texture2D>();
-        public Dictionary<ObjectType, Texture2D> WorldObjects = new Dictionary<ObjectType, Texture2D>();
+        public Dictionary<string, Texture2D> WorldObjects = new Dictionary<string, Texture2D>();
 
         public Texture2D BuildButtonPressed;
         public Texture2D BuildButtonOff;
@@ -47,7 +49,14 @@ namespace LoM.Util
             TileTextures.Add(TileType.Ground, _content.Load<Texture2D>("Tile/ground"));
             TileTextures.Add(TileType.None, _content.Load<Texture2D>("Tile/none"));
 
-            WorldObjects.Add(ObjectType.Wall, _content.Load<Texture2D>("Objects/wall"));
+            var di = new DirectoryInfo(_content.RootDirectory + "/Objects");
+            var files = di.GetFiles("*.xnb");
+
+            foreach (var file in files)
+            {
+                var fileName = file.Name.Split('.')[0];
+                WorldObjects.Add(fileName, _content.Load<Texture2D>($"Objects/{fileName}"));
+            }
 
 
             Pixel = _content.Load<Texture2D>("pixel");
