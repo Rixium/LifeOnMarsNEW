@@ -37,6 +37,13 @@ namespace LoM.Game
 
             return true;
         }
-        
+
+        public void RemoveWorldObject()
+        {
+            if (WorldObject == null) return;
+
+            WorldObject = null;
+            OnTileChanged?.Invoke(this);
+        }
     }
 }

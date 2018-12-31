@@ -43,6 +43,7 @@ namespace LoM.Managers
         public World World;
 
         private readonly StringBuilder _stringBuilder = new StringBuilder(4);
+        private bool _isDestroyWorldObjects;
 
         public Camera Camera { get; private set; }
         public CameraController CameraController;
@@ -116,6 +117,12 @@ namespace LoM.Managers
             _tileYStartDrag = Mouse.GetState().Y;
             var tile = GetTileAtMouse(_tileXStartDrag, _tileYStartDrag);
 
+            // TODO NOT SURE ABOUT THIS.
+            if (BuildManager.BuildMode == BuildMode.Destroy)
+            {
+                _isDestroyWorldObjects = tile.WorldObject != null;
+            }
+
             if (tile == null) return;
 
             _tileXStartDrag = tile.X;
@@ -161,10 +168,11 @@ namespace LoM.Managers
             if(BuildManager.BuildMode == BuildMode.Tile)
                 JobManager.CreateTileJobs(_buildTiles);
             else if (BuildManager.BuildMode == BuildMode.Destroy)
-                JobManager.CreateDestroyJobs(_buildTiles);
+                JobManager.CreateDestroyJobs(_buildTiles, _isDestroyWorldObjects);
             else if (BuildManager.BuildMode == BuildMode.WorldObject)
                 JobManager.CreateBuildJobs(_buildTiles);
 
+            _isDestroyWorldObjects = false;
             _buildTiles = null;
         }
 
@@ -189,10 +197,19 @@ namespace LoM.Managers
             for (var x = xStart; x <= xEnd; x++)
             for (var y = yStart; y <= yEnd; y++)
             {
+                // TODO CHECK THE OBJECT TYPE FOR THIS. We might want only walls to be "hollow placed", for rooms.
+                if (BuildManager.BuildMode == BuildMode.WorldObject)
+                    if(x != xStart && x != xEnd && y != yStart && y != yEnd) continue;
                 var tile = World.GetTileAt(x, y);
+
+                if (_buildTiles.Count == 0 && tile.WorldObject != null && BuildManager.BuildMode == BuildMode.Destroy)
+                    _isDestroyWorldObjects = true;
+
                 if (tile == null || tile.Type != TileType.None && BuildManager.BuildMode == BuildMode.Tile ||
-                    tile.Type == TileType.None && BuildManager.BuildMode == BuildMode.Destroy || tile.WorldObject != null &&
-                    BuildManager.BuildMode == BuildMode.WorldObject) continue;
+                    (tile.Type == TileType.None && tile.WorldObject == null) && BuildManager.BuildMode == BuildMode.Destroy || (tile.WorldObject != null &&
+                    BuildManager.BuildMode == BuildMode.WorldObject)) continue;
+
+                if (_isDestroyWorldObjects && tile.WorldObject == null) continue; // TODO DUNNO?
                 _buildTiles.Add(tile);
             }
         }
@@ -268,7 +285,7 @@ namespace LoM.Managers
                         spriteBatch.Draw(ContentChest.TileTextures[TileType.Ground],
                             new Vector2(tile.X * TileSize, tile.Y * TileSize),
                             Color.White * 0.5f);
-                    else if (job.JobType == JobType.Destroy)
+                    else if (job.JobType == JobType.DestroyWorldObject || job.JobType == JobType.DestroyTile)
                         spriteBatch.Draw(ContentChest.Pixel,
                             new Rectangle(tile.X * TileSize, tile.Y * TileSize, TileSize, TileSize),
                             Color.Red * 0.15f);

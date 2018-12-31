@@ -14,6 +14,8 @@ namespace LoM.Game
 
         public Tile Tile { get; }
         public ObjectType ObjectType { get; }
+
+        public bool HollowPlacement { get; set; } = true;
         public bool MergesWithNeighbors { get; set; } = true;
 
     }

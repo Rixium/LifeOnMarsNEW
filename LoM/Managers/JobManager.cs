@@ -49,15 +49,17 @@ namespace LoM.Managers
             }
         }
 
-        public void CreateDestroyJobs(List<Tile> buildTiles)
+        public void CreateDestroyJobs(List<Tile> buildTiles, bool isDestroyWorldObject)
         {
             if (buildTiles == null || buildTiles.Count == 0) return;
+
+            var jobType = isDestroyWorldObject ? JobType.DestroyWorldObject : JobType.DestroyTile;
 
             foreach (var tile in buildTiles)
             {
                 AddJob(new Job
                 {
-                    JobType = JobType.Destroy,
+                    JobType = jobType,
                     RequiredJobTime = 0.2f,
                     Tile = tile,
                     OnJobComplete = JobComplete
@@ -91,8 +93,10 @@ namespace LoM.Managers
 
             if (job.JobType == JobType.Build)
                 jobTile.SetType(TileType.Ground);
-            else if (job.JobType == JobType.Destroy)
+            else if (job.JobType == JobType.DestroyTile)
                 jobTile.SetType(TileType.None);
+            else if (job.JobType == JobType.DestroyWorldObject)
+                jobTile.RemoveWorldObject();
             else if (job.JobType == JobType.WorldObject)
             {
                 var newWorldObject = CreateWorldObject(job);

@@ -3,7 +3,8 @@
     public enum JobType
     {
         Build,
-        Destroy,
-        WorldObject
+        DestroyTile,
+        WorldObject,
+        DestroyWorldObject
     }
 }
