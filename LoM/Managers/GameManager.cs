@@ -66,6 +66,7 @@ namespace LoM.Managers
             SoundManager = new SoundManager(this, BuildManager);
 
             World.OnTileChanged += SoundManager.TileChanged;
+            World.OnTileChanged += OnTileChanged;
 
             UIManager = new UIManager(this, InputManager, BuildManager, SoundManager);
             JobManager = new JobManager(BuildManager);
@@ -76,6 +77,14 @@ namespace LoM.Managers
             SetupCamera();
 
             SoundManager.PlayMainTrack();
+        }
+
+        private void OnTileChanged(Tile obj)
+        {
+            foreach (var character in World.Characters)
+            {
+                character.InvalidatePath();
+            }
         }
 
         private void SetupCamera()
@@ -220,7 +229,6 @@ namespace LoM.Managers
         public void Update(float deltaTime)
         {
             InputManager.Update(deltaTime);
-            JobManager.Update(deltaTime);
             World.Update(deltaTime);
         }
 
@@ -333,17 +341,38 @@ namespace LoM.Managers
                     Color.White);
 
 
-            foreach (var c in World.Characters.OrderBy(character => character.Y))
+            foreach (var c in World.Characters.OrderBy(character => character.Tile.Y))
             {
-                spriteBatch.Draw(ContentChest.CharacterTypes[c.CharacterType], new Rectangle((int)c.X, (int)c.Y, TileSize, TileSize), Color.White);
 
-                var text = c.CharacterType;
-                var textWidth = ContentChest.MainFont.MeasureString(text).X;
-                spriteBatch.DrawString(ContentChest.MainFont, text, new Vector2(c.X + 16 - textWidth / 2, c.Y - 10), Color.White);
+                DrawCharacter(spriteBatch, c);
             }
 
 
             spriteBatch.End();
+        }
+
+        private void DrawCharacter(SpriteBatch spriteBatch, Character character)
+        {
+            float drawX = character.Tile.X * 32;
+            float drawY = character.Tile.Y * 32;
+            var targetX = drawX;
+            var targetY = drawY;
+
+            if (character.TargetTile != null)
+            {
+                targetX = character.TargetTile.X * 32;
+                targetY = character.TargetTile.Y * 32;
+            }
+
+            drawX -= (drawX - targetX) * character.MovementPercentage;
+            drawY -= (drawY - targetY) * character.MovementPercentage;
+
+
+            spriteBatch.Draw(ContentChest.CharacterTypes[character.CharacterType], new Rectangle((int)drawX, (int)drawY, TileSize, TileSize), Color.White);
+
+            var text = character.CharacterType;
+            var textWidth = ContentChest.MainFont.MeasureString(text).X;
+            spriteBatch.DrawString(ContentChest.MainFont, text, new Vector2(drawX + 16 - textWidth / 2, drawY - 10), Color.White);
         }
 
         private void DrawWorldObject(SpriteBatch spriteBatch, WorldObject worldObject)

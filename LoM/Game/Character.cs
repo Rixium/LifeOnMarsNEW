@@ -12,12 +12,12 @@ namespace LoM.Game
         public static Random Random = new Random();
 
         public string CharacterType;
-
-        public float X;
-        public float Y;
-
+        
         public Tile Tile { get; private set; }
-        private Tile _targetTile;
+        public Tile TargetTile { get; private set; }
+
+        public float MovementPercentage;
+        private const float Speed = 5f;
 
         public Job CurrentJob { get; private set; }
         public World World => Tile.World;
@@ -30,10 +30,7 @@ namespace LoM.Game
         public Character(Tile tile, string characterType)
         {
             Tile = tile;
-            X = tile.X * 32;
-            Y = tile.Y * 32;
-
-            _targetTile = Tile;
+            TargetTile = Tile;
             CharacterType = characterType;
         }
 
@@ -41,37 +38,57 @@ namespace LoM.Game
         {
             WalkToTarget(deltaTime);
 
-            if (CurrentJob == null && Tile == _targetTile) GetJob();
+            if (CurrentJob == null && Tile == TargetTile) GetJob();
             else DoJob(deltaTime);
         }
 
         private void WalkToTarget(float deltaTime)
         {
-            var direction = new Vector2(_targetTile.X - Tile.X, _targetTile.Y - Tile.Y);
-            direction.X = MathHelper.Clamp(direction.X, -1, 1);
-            direction.Y = MathHelper.Clamp(direction.Y, -1, 1);
-
-
-            if (Math.Abs(X - _targetTile.X * 32) < 5f && Math.Abs(Y - _targetTile.Y * 32) < 5f)
+            if (Tile == TargetTile)
             {
-                Tile = _targetTile;
-
-                if (_path?.Count > 0)
-                    _targetTile = _path.Pop();
-                
+                MovementPercentage = 1;
+                GetNextTile();
                 return;
             }
 
-            X += direction.X * 50 * deltaTime;
-            Y += direction.Y * 50 * deltaTime;
+            MovementPercentage += Speed * deltaTime;
+            MovementPercentage = MathHelper.Clamp(MovementPercentage, 0, 1);
+
+            if (MovementPercentage < 1) return;
+
+            Tile = TargetTile;
+            GetNextTile();
         }
 
+        private void GetNextTile()
+        {
+            if (_path == null) return;
+            if (_path.Count == 0) return;
+
+            MovementPercentage = 0;
+            TargetTile = _path.Pop();
+        }
+
+        public void InvalidatePath()
+        {
+            if (_path == null || _path.Count == 0) return;
+            _path = null;
+
+            if (CurrentJob != null)
+            {
+                CurrentJob.Assigned = false;
+                CurrentJob.Assignee = null;
+                CurrentJob = null;
+            }
+
+            GetJob();
+        }
 
         // TODO Rewrite logic I dont like the tilesize being used here. Should have movementpercentage.
 
         private void DoJob(float deltaTime)
         {
-            if(_path?.Count == 0 && Tile == _targetTile) {
+            if(_path?.Count == 0 && Tile == TargetTile) {
                 CurrentJob.DoWork(deltaTime);
             }
         }

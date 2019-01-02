@@ -12,9 +12,8 @@ namespace LoM.Util
 {
     public class ContentChest
     {
-
         private ContentManager _content;
-        
+
         public SpriteFont MainFont;
 
         public Texture2D Reticle;
@@ -39,14 +38,11 @@ namespace LoM.Util
         public Texture2D WallButtonPressed;
         public Texture2D WallButtonOff;
 
-        public Texture2D Man;
-
-
         public ContentChest(ContentManager content)
         {
             _content = content;
         }
-        
+
         public void Load()
         {
             TileTextures.Add(TileType.Ground, _content.Load<Texture2D>("Tile/ground"));
@@ -90,7 +86,6 @@ namespace LoM.Util
             DestroyButtonPressed = _content.Load<Texture2D>("UI/Buttons/destroyButton_Pressed");
             WallButtonOff = _content.Load<Texture2D>("UI/Buttons/buildWall_Off");
             WallButtonPressed = _content.Load<Texture2D>("UI/Buttons/buildWall_Pressed");
-
         }
     }
 }

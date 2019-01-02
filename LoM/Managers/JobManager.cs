@@ -125,18 +125,6 @@ namespace LoM.Managers
             return new WorldObject(job.Tile, job.ObjectType);
         }
 
-        public void Update(float deltaTime)
-        {
-            return;
-            if (_activeJobs.Count == 0) return;
-
-            var currentJob = _activeJobs[0];
-            currentJob.DoWork(deltaTime);
-
-            if (currentJob.Cancelled)
-                currentJob.OnJobComplete(currentJob);
-        }
-
         public List<Job> GetJobs()
         {
             return _activeJobs;
