@@ -14,7 +14,7 @@ namespace LoM.Util
     {
 
         private ContentManager _content;
-
+        
         public SpriteFont MainFont;
 
         public Texture2D Reticle;
@@ -28,6 +28,7 @@ namespace LoM.Util
 
         public Dictionary<TileType, Texture2D> TileTextures = new Dictionary<TileType, Texture2D>();
         public Dictionary<string, Texture2D> WorldObjects = new Dictionary<string, Texture2D>();
+        public Dictionary<string, Texture2D> CharacterTypes = new Dictionary<string, Texture2D>();
 
         public Texture2D BuildButtonPressed;
         public Texture2D BuildButtonOff;
@@ -37,6 +38,8 @@ namespace LoM.Util
 
         public Texture2D WallButtonPressed;
         public Texture2D WallButtonOff;
+
+        public Texture2D Man;
 
 
         public ContentChest(ContentManager content)
@@ -59,6 +62,15 @@ namespace LoM.Util
                 WorldObjects.Add(fileName, _content.Load<Texture2D>($"Objects/{fileName}"));
             }
 
+            di = new DirectoryInfo(_content.RootDirectory + "/Characters");
+            files = di.GetFiles("*.xnb");
+
+            // Load in our objects from the correct folder and bind them to the dictionary.
+            foreach (var file in files)
+            {
+                var fileName = file.Name.Split('.')[0];
+                CharacterTypes.Add(fileName, _content.Load<Texture2D>($"Characters/{fileName}"));
+            }
 
             Pixel = _content.Load<Texture2D>("pixel");
             Reticle = _content.Load<Texture2D>("UI/reticle");

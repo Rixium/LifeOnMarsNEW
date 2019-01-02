@@ -17,6 +17,7 @@ namespace LoM.Game
 
         public bool HollowPlacement { get; set; } = true;
         public bool MergesWithNeighbors { get; set; } = true;
+        public float MovementCost { get; set; } = 0;
 
     }
 }

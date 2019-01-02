@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using LoM.Constants;
 using LoM.Game;
 using LoM.Game.Build;
-using LoM.Game.Job;
+using LoM.Game.Jobs;
 
 namespace LoM.Managers
 {
@@ -27,9 +27,15 @@ namespace LoM.Managers
 
         public Job GetJob()
         {
-            return _activeJobs.Count == 0 ? 
-                null : 
-                _activeJobs[0];
+            if (_activeJobs.Count == 0) return null;
+
+            foreach (var job in _activeJobs)
+            {
+                if (job.Assigned) continue;
+                return job;
+            }
+
+            return null;
         }
 
         public int JobCount()
@@ -60,11 +66,17 @@ namespace LoM.Managers
                 AddJob(new Job
                 {
                     JobType = jobType,
-                    RequiredJobTime = 0.2f,
+                    RequiredJobTime = 0.5f,
                     Tile = tile,
-                    OnJobComplete = JobComplete
+                    OnJobComplete = JobComplete,
+                    OnJobCancelled = JobCancelled
                 });
             }
+        }
+
+        private void JobCancelled(Job obj)
+        {
+            _activeJobs.Remove(obj);
         }
 
         public void CreateTileJobs(List<Tile> buildTiles)
@@ -76,9 +88,10 @@ namespace LoM.Managers
                 AddJob(new Job
                 {
                     JobType = JobType.Build,
-                    RequiredJobTime = 0.02f,
+                    RequiredJobTime = 1f,
                     Tile = tile,
-                    OnJobComplete = JobComplete
+                    OnJobComplete = JobComplete,
+                    OnJobCancelled = JobCancelled
                 });
             }
         }
@@ -114,6 +127,7 @@ namespace LoM.Managers
 
         public void Update(float deltaTime)
         {
+            return;
             if (_activeJobs.Count == 0) return;
 
             var currentJob = _activeJobs[0];
@@ -138,11 +152,36 @@ namespace LoM.Managers
                 {
                     JobType = JobType.WorldObject,
                     ObjectType = _buildManager.BuildObject,
-                    RequiredJobTime = 0.2f,
+                    RequiredJobTime = 2f,
                     Tile = tile,
-                    OnJobComplete = JobComplete
+                    OnJobComplete = JobComplete,
+                    OnJobCancelled = JobCancelled
                 });
             }
         }
+
+        public Job OnJobRequest(Character character)
+        {
+            var nearestJob = GetJob();
+            if (nearestJob == null) return null;
+
+            var nearestDistance = Math.Abs(character.Tile.X - nearestJob.Tile.X) +
+                                  Math.Abs(character.Tile.Y - nearestJob.Tile.Y);
+            
+            foreach (var job in _activeJobs)
+            {
+                if (job.Assigned) continue;
+
+                var jobDistance = Math.Abs(character.Tile.X - job.Tile.X) +
+                    Math.Abs(character.Tile.Y - job.Tile.Y);
+
+                if (jobDistance > nearestDistance) continue;
+                nearestJob = job;
+                nearestDistance = jobDistance;
+            }
+
+            return nearestJob;
+        }
+
     }
 }

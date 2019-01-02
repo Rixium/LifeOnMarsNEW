@@ -45,8 +45,10 @@
     <Compile Include="Constants\ObjectType.cs" />
     <Compile Include="Game\Build\BuildManager.cs" />
     <Compile Include="Game\Build\BuildMode.cs" />
+    <Compile Include="Game\Character.cs" />
     <Compile Include="Game\WorldObject.cs" />
     <Compile Include="Managers\JobManager.cs" />
+    <Compile Include="Pathfinding\TilePath.cs" />
     <Compile Include="UI\Button.cs" />
     <Compile Include="Util\Camera.cs" />
     <Compile Include="Util\CameraController.cs" />
@@ -55,8 +57,8 @@
     <Compile Include="UI\ElementType.cs" />
     <Compile Include="Managers\GameManager.cs" />
     <Compile Include="Managers\InputManager.cs" />
-    <Compile Include="Game\Job\Job.cs" />
-    <Compile Include="Game\Job\JobType.cs" />
+    <Compile Include="Game\Jobs\Job.cs" />
+    <Compile Include="Game\Jobs\JobType.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -69,6 +71,9 @@
     <Compile Include="Game\World.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="ConcurrentPriorityQueue, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\PriorityQueue.0.1.0\lib\net45\ConcurrentPriorityQueue.dll</HintPath>
+    </Reference>
     <Reference Include="MonoGame.Framework">
       <HintPath>$(MonoGameInstallDirectory)\MonoGame\v3.0\Assemblies\DesktopGL\MonoGame.Framework.dll</HintPath>
     </Reference>
@@ -126,6 +131,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="app.manifest" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

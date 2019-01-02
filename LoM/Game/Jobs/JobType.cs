@@ -1,4 +1,4 @@
-﻿namespace LoM.Game.Job
+﻿namespace LoM.Game.Jobs
 {
     public enum JobType
     {

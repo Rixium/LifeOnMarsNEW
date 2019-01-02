@@ -1,7 +1,7 @@
 ﻿using System;
 using LoM.Constants;
 
-namespace LoM.Game.Job
+namespace LoM.Game.Jobs
 {
     public class Job
     {
@@ -9,6 +9,9 @@ namespace LoM.Game.Job
         public Tile Tile;
         public float JobTime;
         public float RequiredJobTime;
+
+        public bool Assigned;
+        public Character Assignee;
 
         public bool Cancelled;
 

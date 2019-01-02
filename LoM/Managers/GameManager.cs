@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using LoM.Constants;
+﻿using LoM.Constants;
 using LoM.Game;
 using LoM.Game.Build;
-using LoM.Game.Job;
 using LoM.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using LoM.Game.Jobs;
 
 namespace LoM.Managers
 {
@@ -69,7 +70,9 @@ namespace LoM.Managers
             UIManager = new UIManager(this, InputManager, BuildManager, SoundManager);
             JobManager = new JobManager(BuildManager);
             JobManager.OnJobsComplete += SoundManager.JobComplete;
-            
+
+            World.OnJobRequest += JobManager.OnJobRequest;
+
             SetupCamera();
 
             SoundManager.PlayMainTrack();
@@ -218,6 +221,7 @@ namespace LoM.Managers
         {
             InputManager.Update(deltaTime);
             JobManager.Update(deltaTime);
+            World.Update(deltaTime);
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -280,15 +284,42 @@ namespace LoM.Managers
                 {
                     if (job.Cancelled) continue;
 
+                    var jobCompletion = (job.JobTime / job.RequiredJobTime);
+                    var coverHeight = (int)(jobCompletion * TileSize);
+                    
                     var tile = job.Tile;
+
+                    var isAssigned = job.Assigned;
+
                     if (job.JobType == JobType.Build)
+                    {
                         spriteBatch.Draw(ContentChest.TileTextures[TileType.Ground],
                             new Vector2(tile.X * TileSize, tile.Y * TileSize),
-                            Color.White * 0.5f);
-                    else if (job.JobType == JobType.DestroyWorldObject || job.JobType == JobType.DestroyTile)
+                            Color.White * 0.2f);
+                        spriteBatch.Draw(ContentChest.Pixel,
+                            new Rectangle(tile.X * TileSize, tile.Y * TileSize + TileSize - coverHeight, TileSize, coverHeight),
+                            Color.Green * 0.3f);
+                    }
+                    else if (job.JobType == JobType.WorldObject)
+                    {
                         spriteBatch.Draw(ContentChest.Pixel,
                             new Rectangle(tile.X * TileSize, tile.Y * TileSize, TileSize, TileSize),
+                            Color.White * 0.2f);
+                        spriteBatch.Draw(ContentChest.Pixel,
+                            new Rectangle(tile.X * TileSize, tile.Y * TileSize + TileSize - coverHeight, TileSize, coverHeight),
+                            Color.Green * 0.3f);
+                    }
+                    else if (job.JobType == JobType.DestroyWorldObject || job.JobType == JobType.DestroyTile)
+                        spriteBatch.Draw(ContentChest.Pixel,
+                            new Rectangle(tile.X * TileSize, tile.Y * TileSize + TileSize - coverHeight, TileSize, coverHeight),
                             Color.Red * 0.15f);
+
+                    if (!isAssigned) continue;
+
+                    var sprite = ContentChest.CharacterTypes[job.Assignee.CharacterType];
+                    spriteBatch.Draw(sprite,
+                        new Vector2(tile.X * 32 + 16 - sprite.Width / 2,
+                            tile.Y * 32 + 16 - sprite.Height / 2), Color.White * 0.4f);
                 }
 
 
@@ -300,6 +331,17 @@ namespace LoM.Managers
             if (mouseTile != null)
                 spriteBatch.Draw(ContentChest.HoverSquare, new Vector2(mouseTile.X * TileSize, mouseTile.Y * TileSize),
                     Color.White);
+
+
+            foreach (var c in World.Characters.OrderBy(character => character.Y))
+            {
+                spriteBatch.Draw(ContentChest.CharacterTypes[c.CharacterType], new Rectangle((int)c.X, (int)c.Y, TileSize, TileSize), Color.White);
+
+                var text = c.CharacterType;
+                var textWidth = ContentChest.MainFont.MeasureString(text).X;
+                spriteBatch.DrawString(ContentChest.MainFont, text, new Vector2(c.X + 16 - textWidth / 2, c.Y - 10), Color.White);
+            }
+
 
             spriteBatch.End();
         }
