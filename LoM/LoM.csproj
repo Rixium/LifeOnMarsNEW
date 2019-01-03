@@ -46,8 +46,10 @@
     <Compile Include="Game\Build\BuildManager.cs" />
     <Compile Include="Game\Build\BuildMode.cs" />
     <Compile Include="Game\Character.cs" />
+    <Compile Include="Game\Region.cs" />
     <Compile Include="Game\WorldObject.cs" />
     <Compile Include="Managers\JobManager.cs" />
+    <Compile Include="Managers\RegionManager.cs" />
     <Compile Include="Pathfinding\TilePath.cs" />
     <Compile Include="UI\Button.cs" />
     <Compile Include="Util\Camera.cs" />

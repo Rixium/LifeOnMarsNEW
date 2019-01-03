@@ -37,7 +37,6 @@ namespace LoM.Game
             Characters.Add(new Character(Tiles[width / 2 - 2, height / 2], "Mario"));
             Characters.Add(new Character(Tiles[width / 2, height / 2 + 2], "Bran"));
             Characters.Add(new Character(Tiles[width / 2, height / 2 - 2], "Grace"));
-            Characters.Add(new Character(Tiles[width / 2 - 2, height / 2 + 2], "Lara"));
         }
 
         public void Update(float deltaTime)

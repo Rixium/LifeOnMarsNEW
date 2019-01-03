@@ -92,6 +92,18 @@
 /processorParam:TextureFormat=Compressed
 /build:Fonts/gameFont.spritefont
 
+#begin Helmet.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Helmet.png
+
 #begin Music/music.mp3
 /importer:Mp3Importer
 /processor:SongProcessor
@@ -409,6 +421,30 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:UI/Buttons/destroyButton_Pressed.png
+
+#begin UI/Buttons/pause.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:UI/Buttons/pause.png
+
+#begin UI/Buttons/play.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:UI/Buttons/play.png
 
 #begin UI/grid.png
 /importer:TextureImporter

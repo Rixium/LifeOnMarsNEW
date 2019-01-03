@@ -15,13 +15,14 @@ namespace LoM.Managers
 {
     public class GameManager
     {
-        private const int MapHeight = 100;
-        private const int MapWidth = 100;
+        private const int MapHeight = 50;
+        private const int MapWidth = 50;
         private const int TileSize = 32;
         
         private List<Tile> _buildTiles = new List<Tile>();
 
         private bool _dragging;
+        private bool _paused;
 
         private bool _showGrid;
 
@@ -35,6 +36,7 @@ namespace LoM.Managers
         public ContentChest ContentChest;
         public InputManager InputManager;
         public JobManager JobManager;
+        public RegionManager RegionManager;
 
         public Action OnJobsComplete;
 
@@ -71,7 +73,10 @@ namespace LoM.Managers
             UIManager = new UIManager(this, InputManager, BuildManager, SoundManager);
             JobManager = new JobManager(BuildManager);
             JobManager.OnJobsComplete += SoundManager.JobComplete;
+            RegionManager = new RegionManager(this);
 
+            JobManager.OnJobComplete += RegionManager.OnJobComplete;
+            World.OnTileChanged += JobManager.OnTileChanged;
             World.OnJobRequest += JobManager.OnJobRequest;
 
             SetupCamera();
@@ -81,6 +86,8 @@ namespace LoM.Managers
 
         private void OnTileChanged(Tile obj)
         {
+            if (obj?.WorldObject?.MovementCost != 0) return;
+
             foreach (var character in World.Characters)
             {
                 character.InvalidatePath();
@@ -221,7 +228,11 @@ namespace LoM.Managers
                     (tile.Type == TileType.None && tile.WorldObject == null) && BuildManager.BuildMode == BuildMode.Destroy || (tile.WorldObject != null &&
                     BuildManager.BuildMode == BuildMode.WorldObject)) continue;
 
+                if (BuildManager.BuildMode == BuildMode.WorldObject && tile.Type == TileType.None)
+                        continue;
+
                 if (_isDestroyWorldObjects && tile.WorldObject == null) continue; // TODO DUNNO?
+
                 _buildTiles.Add(tile);
             }
         }
@@ -229,6 +240,8 @@ namespace LoM.Managers
         public void Update(float deltaTime)
         {
             InputManager.Update(deltaTime);
+
+            if (_paused) return;
             World.Update(deltaTime);
         }
 
@@ -246,18 +259,19 @@ namespace LoM.Managers
             var renderStartY = (Camera.Y - Screen.Width) / TileSize - 1;
             var renderEndX = (Camera.X + Screen.Width) / TileSize + 1;
             var renderEndY = (Camera.Y + Screen.Height) / TileSize + 1;
-
+            
             renderStartX = MathHelper.Clamp(renderStartX, 0, MapWidth);
             renderStartY = MathHelper.Clamp(renderStartY, 0, MapHeight);
             renderEndX = MathHelper.Clamp(renderEndX, 0, MapWidth);
             renderEndY = MathHelper.Clamp(renderEndY, 0, MapHeight);
-
+            
+            
             spriteBatch.Begin(SpriteSortMode.Immediate, null, SamplerState.PointClamp, null, null, null, Camera.Get());
 
-            for (var i = renderStartX; i < renderEndX; i++)
+            /*for (var i = renderStartX; i < renderEndX; i++)
             for (var j = renderStartY; j < renderEndY; j++)
-            {
-                var tile = World.Tiles[i, j];
+            {*/ foreach( var tile in World.Tiles) { 
+                //var tile = World.Tiles[i, j];
 
                 if (_showGrid && tile.Type != TileType.None)
                     spriteBatch.Draw(ContentChest.GridSquare, new Vector2(tile.X * TileSize, tile.Y * TileSize),
@@ -321,13 +335,14 @@ namespace LoM.Managers
                         spriteBatch.Draw(ContentChest.Pixel,
                             new Rectangle(tile.X * TileSize, tile.Y * TileSize + TileSize - coverHeight, TileSize, coverHeight),
                             Color.Red * 0.15f);
+/*
 
                     if (!isAssigned) continue;
 
                     var sprite = ContentChest.CharacterTypes[job.Assignee.CharacterType];
                     spriteBatch.Draw(sprite,
                         new Vector2(tile.X * 32 + 16 - sprite.Width / 2,
-                            tile.Y * 32 + 16 - sprite.Height / 2), Color.White * 0.4f);
+                            tile.Y * 32 + 16 - sprite.Height / 2), Color.White * 0.4f);*/
                 }
 
 
@@ -337,8 +352,21 @@ namespace LoM.Managers
             var mouseTile = GetTileAtMouse(mouseX, mouseY);
 
             if (mouseTile != null)
+            {
                 spriteBatch.Draw(ContentChest.HoverSquare, new Vector2(mouseTile.X * TileSize, mouseTile.Y * TileSize),
                     Color.White);
+                Console.WriteLine(RegionManager.GetRegionIndexOfTile(mouseTile));
+                if(mouseTile.Region != null && Keyboard.GetState().IsKeyDown(Keys.LeftShift))
+                    foreach (var tile in mouseTile.Region.Tiles)
+                    {
+                        if(mouseTile.Region.SpaceSafe)
+                            spriteBatch.Draw(ContentChest.Pixel, new Rectangle(tile.X * TileSize, tile.Y * TileSize, TileSize, TileSize),
+                                Color.Green * 0.6f);
+                        else
+                            spriteBatch.Draw(ContentChest.Pixel, new Rectangle(tile.X * TileSize, tile.Y * TileSize, TileSize, TileSize),
+                                Color.Pink * 0.6f);
+                    }
+            }
 
 
             foreach (var c in World.Characters.OrderBy(character => character.Tile.Y))
@@ -369,6 +397,11 @@ namespace LoM.Managers
 
 
             spriteBatch.Draw(ContentChest.CharacterTypes[character.CharacterType], new Rectangle((int)drawX, (int)drawY, TileSize, TileSize), Color.White);
+
+            if (character.Tile.Region?.SpaceSafe == false || character.Tile.Region == null)
+            {
+                spriteBatch.Draw(ContentChest.Helmet, new Rectangle((int)drawX, (int)drawY, TileSize, TileSize), Color.White);
+            }
 
             var text = character.CharacterType;
             var textWidth = ContentChest.MainFont.MeasureString(text).X;
@@ -420,5 +453,9 @@ namespace LoM.Managers
             UIManager.Draw(spriteBatch);
         }
 
+        public void Pause(bool paused)
+        {
+            _paused = paused;
+        }
     }
 }

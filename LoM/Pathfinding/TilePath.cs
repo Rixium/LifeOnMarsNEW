@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.InteropServices.WindowsRuntime;
 using ConcurrentPriorityQueue;
 using LoM.Game;
 using Microsoft.Xna.Framework;
@@ -10,15 +8,15 @@ namespace LoM.Pathfinding
 {
     public class TilePath
     {
+        private readonly Tile _endTile;
 
         private readonly Tile _startTile;
-        private readonly Tile _endTile;
         private readonly World _world;
-        
-        private List<Tile> _closedList = new List<Tile>();
-        private Dictionary<Tile, int> _fScores = new Dictionary<Tile, int>();
-        private Dictionary<Tile, Tile> _cameFrom = new Dictionary<Tile, Tile>();
-        private ConcurrentPriorityQueue<Tile, int> _openList = new ConcurrentPriorityQueue<Tile, int>();
+        private readonly Dictionary<Tile, Tile> _cameFrom = new Dictionary<Tile, Tile>();
+
+        private readonly HashSet<Tile> _closedList = new HashSet<Tile>();
+        private readonly Dictionary<Tile, int> _fScores = new Dictionary<Tile, int>();
+        private readonly ConcurrentPriorityQueue<Tile, int> _openList = new ConcurrentPriorityQueue<Tile, int>();
 
         public TilePath(Tile startTile, Tile endTile, World world)
         {
@@ -26,11 +24,21 @@ namespace LoM.Pathfinding
             _endTile = endTile;
             _world = world;
         }
-        
+
         public Stack<Tile> FindPath()
         {
+            if (_startTile.Region != _endTile.Region &&
+                !RegionTileNextTo(_startTile, _endTile)) return null;
+
+            if (_startTile == _endTile)
+            {
+                var newStack = new Stack<Tile>();
+                newStack.Push(_endTile);
+                return newStack;
+            }
+
             _openList.Enqueue(_startTile, 0);
-            
+
             do
             {
                 var bestFScoreTile = _openList.Dequeue();
@@ -38,10 +46,7 @@ namespace LoM.Pathfinding
 
                 var neighbors = bestFScoreTile.GetNeighbors();
 
-                if (bestFScoreTile == _endTile)
-                {
-                    break;
-                }
+                if (bestFScoreTile == _endTile) return ConstructPath();
 
                 foreach (var neighbor in neighbors)
                 {
@@ -49,13 +54,13 @@ namespace LoM.Pathfinding
                     if (_closedList.Contains(neighbor)) continue;
                     if (!_openList.Contains(neighbor))
                     {
-                        if (neighbor.MovementCost == 0 && neighbor != _endTile) continue;
+                        if (neighbor.MovementCost == 0 &&
+                            neighbor != _endTile) continue;
 
                         var fScore = CalculateFScore(neighbor, bestFScoreTile);
                         _fScores[neighbor] = fScore;
                         _cameFrom[neighbor] = bestFScoreTile;
                         _openList.Enqueue(neighbor, -fScore);
-
                         continue;
                     }
 
@@ -63,17 +68,36 @@ namespace LoM.Pathfinding
                     var newFScore = CalculateFScore(bestFScoreTile, neighbor);
 
                     if (newFScore > currentFScore) continue;
+
                     _cameFrom[neighbor] = bestFScoreTile;
                     _fScores[neighbor] = newFScore;
                 }
             } while (_openList.Count > 0);
 
-            return _cameFrom.ContainsKey(_endTile) ? ConstructPath() : null;
+            return null;
+        }
+
+        /// <summary>
+        /// This allows us to traverse tiles next to each other, even if they are in different regions.
+        /// </summary
+        private bool RegionTileNextTo(Tile startTile, Tile endTile)
+        {
+            var endTileRegion = endTile.Region;
+            foreach (var neighbor in startTile.GetNeighbors())
+            {
+                if (neighbor == null) continue;
+                if (neighbor.Region == null || endTile.Region == null) continue;
+                if (neighbor == endTile) return true;
+                if (neighbor.MovementCost == 0) continue;
+                if (neighbor.Region == endTileRegion) return true;
+            }
+
+            return false;
         }
 
         private Stack<Tile> ConstructPath()
         {
-            var tile = _endTile;
+            var tile = _cameFrom[_endTile];
             var stack = new Stack<Tile>();
 
             do
@@ -100,6 +124,5 @@ namespace LoM.Pathfinding
             var fScore = parentFScore + totalDistance;
             return (int) fScore;
         }
-        
     }
 }

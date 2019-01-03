@@ -70,6 +70,29 @@ namespace LoM.Managers
             _inputManager.RegisterUIElement(() => { _buildManager.SetBuildObject(ObjectType.Wall); }, button);
             button.OnClick += _soundManager.OnButtonClick;
             UIElements.Add(button);
+
+            buttonSettings = new ElementSettings()
+            {
+                ImagePressed = _gameManager.ContentChest.Play,
+                ImageOff = _gameManager.ContentChest.Play
+            };
+
+            button = new Button(Screen.Width - buttonSettings.ImagePressed.Width - 10, Screen.Height - 10 - buttonSettings.ImagePressed.Height, buttonSettings);
+            _inputManager.RegisterUIElement(() => { _gameManager.Pause(false); }, button);
+            button.OnClick += _soundManager.OnButtonClick;
+            UIElements.Add(button);
+
+
+            buttonSettings = new ElementSettings()
+            {
+                ImagePressed = _gameManager.ContentChest.Pause,
+                ImageOff = _gameManager.ContentChest.Pause
+            };
+
+            button = new Button(button.X, button.Y - 10 - buttonSettings.ImagePressed.Height, buttonSettings);
+            _inputManager.RegisterUIElement(() => { _gameManager.Pause(true); }, button);
+            button.OnClick += _soundManager.OnButtonClick;
+            UIElements.Add(button);
         }
 
         private void OnButtonClick(UIElement element)

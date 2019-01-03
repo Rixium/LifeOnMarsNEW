@@ -21,6 +21,9 @@ namespace LoM.Util
         public Texture2D Pixel;
         public Texture2D GridSquare;
 
+        public Texture2D Pause;
+        public Texture2D Play;
+
         public SoundEffect BuildSound;
         public SoundEffect SuccessSound;
         public Song MainMusic;
@@ -37,6 +40,8 @@ namespace LoM.Util
 
         public Texture2D WallButtonPressed;
         public Texture2D WallButtonOff;
+
+        public Texture2D Helmet;
 
         public ContentChest(ContentManager content)
         {
@@ -86,6 +91,11 @@ namespace LoM.Util
             DestroyButtonPressed = _content.Load<Texture2D>("UI/Buttons/destroyButton_Pressed");
             WallButtonOff = _content.Load<Texture2D>("UI/Buttons/buildWall_Off");
             WallButtonPressed = _content.Load<Texture2D>("UI/Buttons/buildWall_Pressed");
+
+            Pause = _content.Load<Texture2D>("UI/Buttons/pause");
+            Play = _content.Load<Texture2D>("UI/Buttons/play");
+
+            Helmet = _content.Load<Texture2D>("Helmet");
         }
     }
 }

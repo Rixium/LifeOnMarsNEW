@@ -10,10 +10,12 @@ namespace LoM.Managers
     public class JobManager
     {
         
+        private readonly Dictionary<Character, List<Job>> _unreachables = new Dictionary<Character, List<Job>>();
         private readonly List<Job> _activeJobs = new List<Job>();
         private readonly BuildManager _buildManager;
 
         public Action OnJobsComplete;
+        public Action<Job> OnJobComplete;
 
         public JobManager(BuildManager buildManager)
         {
@@ -32,6 +34,7 @@ namespace LoM.Managers
             foreach (var job in _activeJobs)
             {
                 if (job.Assigned) continue;
+
                 return job;
             }
 
@@ -66,7 +69,7 @@ namespace LoM.Managers
                 AddJob(new Job
                 {
                     JobType = jobType,
-                    RequiredJobTime = 0.5f,
+                    RequiredJobTime = 0.02f,
                     Tile = tile,
                     OnJobComplete = JobComplete,
                     OnJobCancelled = JobCancelled
@@ -88,14 +91,13 @@ namespace LoM.Managers
                 AddJob(new Job
                 {
                     JobType = JobType.Build,
-                    RequiredJobTime = 1f,
+                    RequiredJobTime = 0.02f,
                     Tile = tile,
                     OnJobComplete = JobComplete,
                     OnJobCancelled = JobCancelled
                 });
             }
         }
-
 
         private void JobComplete(Job job)
         {
@@ -115,6 +117,8 @@ namespace LoM.Managers
                 var newWorldObject = CreateWorldObject(job);
                 job.Tile.PlaceObject(newWorldObject);
             }
+
+            OnJobComplete?.Invoke(job);
 
             if (_activeJobs.Count == 0)
                 OnJobsComplete?.Invoke();
@@ -140,12 +144,16 @@ namespace LoM.Managers
                 {
                     JobType = JobType.WorldObject,
                     ObjectType = _buildManager.BuildObject,
-                    RequiredJobTime = 2f,
+                    RequiredJobTime = 0.02f,
                     Tile = tile,
                     OnJobComplete = JobComplete,
                     OnJobCancelled = JobCancelled
                 });
             }
+        }
+
+        public void OnTileChanged(Tile tile)
+        {
         }
 
         public Job OnJobRequest(Character character)
@@ -159,7 +167,6 @@ namespace LoM.Managers
             foreach (var job in _activeJobs)
             {
                 if (job.Assigned) continue;
-
                 var jobDistance = Math.Abs(character.Tile.X - job.Tile.X) +
                     Math.Abs(character.Tile.Y - job.Tile.Y);
 
@@ -167,7 +174,7 @@ namespace LoM.Managers
                 nearestJob = job;
                 nearestDistance = jobDistance;
             }
-
+            
             return nearestJob;
         }
 
