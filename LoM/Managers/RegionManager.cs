@@ -9,14 +9,6 @@ namespace LoM.Managers
         
         private readonly List<Region> _regions = new List<Region>();
 
-        private readonly GameManager _gameManager;
-        private World World => _gameManager.World;
-
-        public RegionManager(GameManager gameManager)
-        {
-            _gameManager = gameManager;
-        }
-
         public Region FloodFillFrom(Tile tile, Tile from)
         {
             var regionTiles = new List<Tile>();

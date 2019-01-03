@@ -73,7 +73,7 @@ namespace LoM.Managers
             UIManager = new UIManager(this, InputManager, BuildManager, SoundManager);
             JobManager = new JobManager(BuildManager);
             JobManager.OnJobsComplete += SoundManager.JobComplete;
-            RegionManager = new RegionManager(this);
+            RegionManager = new RegionManager();
 
             JobManager.OnJobComplete += RegionManager.OnJobComplete;
             World.OnTileChanged += JobManager.OnTileChanged;
@@ -355,7 +355,6 @@ namespace LoM.Managers
             {
                 spriteBatch.Draw(ContentChest.HoverSquare, new Vector2(mouseTile.X * TileSize, mouseTile.Y * TileSize),
                     Color.White);
-                Console.WriteLine(RegionManager.GetRegionIndexOfTile(mouseTile));
                 if(mouseTile.Region != null && Keyboard.GetState().IsKeyDown(Keys.LeftShift))
                     foreach (var tile in mouseTile.Region.Tiles)
                     {

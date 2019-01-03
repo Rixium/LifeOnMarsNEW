@@ -35,6 +35,7 @@ namespace LoM.Game
             Characters.Add(new Character(Tiles[width / 2, height / 2], "Dan"));
             Characters.Add(new Character(Tiles[width / 2 + 2, height / 2], "Tiffany"));
             Characters.Add(new Character(Tiles[width / 2 - 2, height / 2], "Mario"));
+            Characters.Add(new Character(Tiles[width / 2 - 2, height / 2 - 2], "Lara"));
             Characters.Add(new Character(Tiles[width / 2, height / 2 + 2], "Bran"));
             Characters.Add(new Character(Tiles[width / 2, height / 2 - 2], "Grace"));
         }
