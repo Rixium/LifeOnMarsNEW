@@ -88,6 +88,13 @@ namespace LoM.Pathfinding
                 if (neighbor == null) continue;
                 if (neighbor.Region == null || endTile.Region == null) continue;
                 if (neighbor == endTile) return true;
+
+                // TODO Make sure that this works or optimise.
+                foreach (var tile in neighbor.GetNeighbors())
+                {
+                    if (tile == startTile) continue;
+                    if (neighbor.Region == startTile.Region) return true;
+                }
                 if (neighbor.MovementCost == 0) continue;
                 if (neighbor.Region == endTileRegion) return true;
             }

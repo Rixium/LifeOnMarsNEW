@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using LoM.UI;
-using LoM.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -9,46 +8,30 @@ namespace LoM.Managers
 {
     public class InputManager
     {
-        private readonly GameManager _gameManager;
-        private readonly Camera _camera;
+        private const float
+            RequiredHoldTime =
+                0.1f; // Represents how long the mouse button needs to be held down to trigger an onHold event.
 
         private KeyboardState _currentKeyState;
+        private MouseState _currentMouseState;
+
+        private readonly Dictionary<UIElement, Action> _elementMap = new Dictionary<UIElement, Action>();
+        private float _holdTime; // Holds the total number of milliseconds that the mouse button has been held down for.
         private KeyboardState _lastKeyState;
-        public Action<Keys> OnKeyPressed;
-        public Dictionary<Keys, ActionMap> ActionMapBindings = new Dictionary<Keys, ActionMap>();
 
         private MouseState _lastMouseState;
-        private MouseState _currentMouseState;
-        private float _holdTime; // Holds the total number of milliseconds that the mouse button has been held down for.
-        private const float RequiredHoldTime = 0.1f; // Represents how long the mouse button needs to be held down to trigger an onHold event.
+        public Dictionary<Keys, ActionMap> ActionMapBindings = new Dictionary<Keys, ActionMap>();
+        public Action MouseClick;
 
 
         public Action MouseHeld;
         public Action MouseReleased;
-        public Action MouseClick;
+        public Action<Keys> OnKeyPressed;
         public Action RightClick;
-
-        private Dictionary<UIElement, Action> _elementMap = new Dictionary<UIElement, Action>();
-        
-
-        public class ActionMap
-        {
-            public Action<Keys> OnKeyPress;
-            public Action<Keys> OnKeyDown;
-            public Action<Keys> OnKeyUp;
-        }
-
-
-        public InputManager(GameManager gameManager)
-        {
-            _gameManager = gameManager;
-            _camera = gameManager.Camera;
-        }
-
 
         public void RegisterOnKeyDown(Keys key, Action<Keys> controlAction)
         {
-            if(ActionMapBindings.ContainsKey(key) == false)
+            if (ActionMapBindings.ContainsKey(key) == false)
                 ActionMapBindings.Add(key, new ActionMap());
 
             var action = ActionMapBindings[key];
@@ -96,7 +79,7 @@ namespace LoM.Managers
                 else action?.OnKeyDown?.Invoke(key);
             }
         }
-        
+
         private void ManageMouse(float deltaTime)
         {
             _lastMouseState = _currentMouseState;
@@ -111,7 +94,6 @@ namespace LoM.Managers
                 OnMouseRightDown(deltaTime);
             else if (_lastMouseState.RightButton == ButtonState.Pressed)
                 OnMouseRightReleased(deltaTime);
-
         }
 
         private void OnMouseRightReleased(float deltaTime)
@@ -126,10 +108,7 @@ namespace LoM.Managers
 
         private void OnMouseReleased(float deltaTime)
         {
-            if (_holdTime < RequiredHoldTime)
-            {
-                OnMouseClick();
-            }
+            if (_holdTime < RequiredHoldTime) OnMouseClick();
 
             foreach (var keySet in _elementMap)
             {
@@ -152,7 +131,7 @@ namespace LoM.Managers
                 var element = keySet.Key;
 
                 if (!element.CollidesWith(mouse)) continue;
-                
+
                 element.Click();
                 keySet.Value.Invoke();
                 return;
@@ -165,7 +144,7 @@ namespace LoM.Managers
         {
             if (_lastMouseState.LeftButton != ButtonState.Pressed) return;
             _holdTime += deltaTime;
-            if(_holdTime > RequiredHoldTime)
+            if (_holdTime > RequiredHoldTime)
                 OnMouseHeld();
         }
 
@@ -193,5 +172,12 @@ namespace LoM.Managers
             _elementMap.Add(element, onElementClick);
         }
 
+
+        public class ActionMap
+        {
+            public Action<Keys> OnKeyDown;
+            public Action<Keys> OnKeyPress;
+            public Action<Keys> OnKeyUp;
+        }
     }
 }

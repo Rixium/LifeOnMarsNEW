@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using LoM.Game.Jobs;
+using LoM.Serialization;
 
 namespace LoM.Managers
 {
@@ -56,8 +57,49 @@ namespace LoM.Managers
             ContentChest = contentChest;
 
             World = new World(MapWidth, MapHeight);
+            FinaliseSetup();
+        }
 
-            InputManager = new InputManager(this);
+
+        /// <summary>
+        /// Passing a world to the game manager should only ever really happen on map load.
+        /// This will allow extra steps to be called in order to set up the load correctly.
+        /// This includes recalculating the regions.
+        /// </summary>
+        public GameManager(ContentChest contentChest, World world)
+        {
+            ContentChest = contentChest;
+            World = world;
+            FinaliseSetup();
+            RecreateWorld();
+        }
+
+        /// <summary>
+        /// Some callbacks need to be triggered in order to fully recreate the saved world.
+        /// This could change, and we could end up storing data about regions, although will increase
+        /// save file size.
+        /// </summary>
+        private void RecreateWorld()
+        {
+            foreach (var tile in World.Tiles)
+            {
+                if(tile.WorldObject != null)
+                    RegionManager.OnJobComplete(new Job
+                    {
+                        JobType = JobType.WorldObject,
+                        Tile = tile
+                    });
+            }
+            
+        }
+
+        /// <summary>
+        /// Anything that needs to happen for both world load, and new world should happen in this method.
+        /// This guarantees they will always be called.
+        /// </summary>
+        private void FinaliseSetup()
+        {
+            InputManager = new InputManager();
             InputManager.RegisterOnKeyPress(Keys.Space, ToggleGrid);
 
             InputManager.MouseHeld += OnMouseHeld;
@@ -456,5 +498,11 @@ namespace LoM.Managers
         {
             _paused = paused;
         }
+
+        public void SaveGame()
+        {
+            GameSaver.SaveGame(World, "game");
+        }
+
     }
 }

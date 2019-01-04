@@ -1,4 +1,5 @@
 ﻿using LoM.Constants;
+using LoM.Game;
 using LoM.Managers;
 using LoM.Util;
 using Microsoft.Xna.Framework;
@@ -8,7 +9,9 @@ namespace LoM
 {
     public class Main : Microsoft.Xna.Framework.Game
     {
+        public ContentChest ContentChest;
         private GameManager _gameManager;
+        private MainMenu _mainMenu;
         private GraphicsDeviceManager _graphics;
 
         private float _lastUpdate;
@@ -34,12 +37,26 @@ namespace LoM
 
         protected override void LoadContent()
         {
-            var contentChest = new ContentChest(Content);
-            contentChest.Load();
+            ContentChest = new ContentChest(Content);
+            ContentChest.Load();
 
-            _gameManager = new GameManager(contentChest);
+            _mainMenu = new MainMenu(ContentChest);
+            _mainMenu.OnNewGamePressed += NewGame;
+            _mainMenu.OnLoadGame += LoadGame;
 
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+        }
+
+        private void NewGame()
+        {
+            _gameManager = new GameManager(ContentChest);
+            _mainMenu = null;
+        }
+
+        private void LoadGame(World world)
+        {
+            _gameManager = new GameManager(ContentChest, world);
+            _mainMenu = null;
         }
 
         protected override void UnloadContent()
@@ -49,7 +66,8 @@ namespace LoM
         protected override void Update(GameTime gameTime)
         {
             var deltaTime = (float) gameTime.ElapsedGameTime.TotalSeconds;
-            _gameManager.Update(deltaTime);
+            _mainMenu?.Update(deltaTime);
+            _gameManager?.Update(deltaTime * 5);
             base.Update(gameTime);
         }
 
@@ -58,7 +76,13 @@ namespace LoM
             GraphicsDevice.Clear(new Color(132, 56, 56));
 
             GraphicsDevice.Clear(Color.Black);
-            _gameManager.Draw(_spriteBatch);
+
+            // TODO SCREEN CLASS TO HOLD AN INSTANCE OF GAME OR SCREEN.
+            if(_gameManager != null)
+                _gameManager?.Draw(_spriteBatch);
+            else
+                _mainMenu.Draw(_spriteBatch);
+
             base.Draw(gameTime);
         }
     }

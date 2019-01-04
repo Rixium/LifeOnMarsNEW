@@ -93,6 +93,17 @@ namespace LoM.Managers
             _inputManager.RegisterUIElement(() => { _gameManager.Pause(true); }, button);
             button.OnClick += _soundManager.OnButtonClick;
             UIElements.Add(button);
+
+            buttonSettings = new ElementSettings()
+            {
+                ImagePressed = _gameManager.ContentChest.SaveGameButtonPressed,
+                ImageOff = _gameManager.ContentChest.SaveGameButtonOff
+            };
+
+            button = new Button(Screen.Width - buttonSettings.ImagePressed.Width - 10, 10, buttonSettings);
+            _inputManager.RegisterUIElement(() => { _gameManager.SaveGame(); }, button);
+            button.OnClick += _soundManager.OnButtonClick;
+            UIElements.Add(button);
         }
 
         private void OnButtonClick(UIElement element)

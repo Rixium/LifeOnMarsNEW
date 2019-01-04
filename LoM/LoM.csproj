@@ -48,9 +48,15 @@
     <Compile Include="Game\Character.cs" />
     <Compile Include="Game\Region.cs" />
     <Compile Include="Game\WorldObject.cs" />
+    <Compile Include="MainMenu.cs" />
     <Compile Include="Managers\JobManager.cs" />
     <Compile Include="Managers\RegionManager.cs" />
     <Compile Include="Pathfinding\TilePath.cs" />
+    <Compile Include="Serialization\GameLoader.cs" />
+    <Compile Include="Serialization\GameSaver.cs" />
+    <Compile Include="Serialization\TileData.cs" />
+    <Compile Include="Serialization\WorldObjectData.cs" />
+    <Compile Include="Serialization\WorldSave.cs" />
     <Compile Include="UI\Button.cs" />
     <Compile Include="Util\Camera.cs" />
     <Compile Include="Util\CameraController.cs" />
@@ -78,6 +84,10 @@
     </Reference>
     <Reference Include="MonoGame.Framework">
       <HintPath>$(MonoGameInstallDirectory)\MonoGame\v3.0\Assemblies\DesktopGL\MonoGame.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Desktop\testify\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />

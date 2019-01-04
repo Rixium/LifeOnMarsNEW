@@ -17,6 +17,8 @@ namespace LoM.Managers
         public Action OnJobsComplete;
         public Action<Job> OnJobComplete;
 
+        public float JobTime = 2f;
+
         public JobManager(BuildManager buildManager)
         {
             _buildManager = buildManager;
@@ -69,7 +71,7 @@ namespace LoM.Managers
                 AddJob(new Job
                 {
                     JobType = jobType,
-                    RequiredJobTime = 0.02f,
+                    RequiredJobTime = JobTime,
                     Tile = tile,
                     OnJobComplete = JobComplete,
                     OnJobCancelled = JobCancelled
@@ -91,7 +93,7 @@ namespace LoM.Managers
                 AddJob(new Job
                 {
                     JobType = JobType.Build,
-                    RequiredJobTime = 0.02f,
+                    RequiredJobTime = JobTime,
                     Tile = tile,
                     OnJobComplete = JobComplete,
                     OnJobCancelled = JobCancelled
@@ -144,7 +146,7 @@ namespace LoM.Managers
                 {
                     JobType = JobType.WorldObject,
                     ObjectType = _buildManager.BuildObject,
-                    RequiredJobTime = 0.02f,
+                    RequiredJobTime = JobTime,
                     Tile = tile,
                     OnJobComplete = JobComplete,
                     OnJobCancelled = JobCancelled

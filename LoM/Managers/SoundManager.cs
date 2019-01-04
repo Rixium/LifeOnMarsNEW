@@ -1,4 +1,5 @@
-﻿using LoM.Game;
+﻿using System.Runtime.Serialization.Formatters;
+using LoM.Game;
 using LoM.Game.Build;
 using LoM.UI;
 using LoM.Util;
@@ -20,7 +21,7 @@ namespace LoM.Managers
         }
 
         public void JobComplete()
-        {
+        {   
             ContentChest.SuccessSound.Play();
         }
 

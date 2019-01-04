@@ -41,6 +41,15 @@ namespace LoM.Util
         public Texture2D WallButtonPressed;
         public Texture2D WallButtonOff;
 
+        public Texture2D LoadGameButtonPressed;
+        public Texture2D LoadGameButtonOff;
+
+        public Texture2D SaveGameButtonPressed;
+        public Texture2D SaveGameButtonOff;
+
+        public Texture2D NewGameButtonPressed;
+        public Texture2D NewGameButtonOff;
+
         public Texture2D Helmet;
 
         public ContentChest(ContentManager content)
@@ -91,6 +100,13 @@ namespace LoM.Util
             DestroyButtonPressed = _content.Load<Texture2D>("UI/Buttons/destroyButton_Pressed");
             WallButtonOff = _content.Load<Texture2D>("UI/Buttons/buildWall_Off");
             WallButtonPressed = _content.Load<Texture2D>("UI/Buttons/buildWall_Pressed");
+
+            NewGameButtonOff = _content.Load<Texture2D>("UI/Buttons/newGameButton");
+            NewGameButtonPressed = _content.Load<Texture2D>("UI/Buttons/newGameButton_Pressed");
+            SaveGameButtonOff = _content.Load<Texture2D>("UI/Buttons/saveGameButton");
+            SaveGameButtonPressed = _content.Load<Texture2D>("UI/Buttons/saveGameButton_Pressed");
+            LoadGameButtonOff = _content.Load<Texture2D>("UI/Buttons/loadGameButton");
+            LoadGameButtonPressed = _content.Load<Texture2D>("UI/Buttons/loadGameButton_Pressed");
 
             Pause = _content.Load<Texture2D>("UI/Buttons/pause");
             Play = _content.Load<Texture2D>("UI/Buttons/play");
