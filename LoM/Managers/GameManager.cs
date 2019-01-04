@@ -52,6 +52,8 @@ namespace LoM.Managers
         public Camera Camera { get; private set; }
         public CameraController CameraController;
 
+        public Character SelectedCharacter;
+
         public GameManager(ContentChest contentChest)
         {
             ContentChest = contentChest;
@@ -102,6 +104,7 @@ namespace LoM.Managers
             InputManager = new InputManager();
             InputManager.RegisterOnKeyPress(Keys.Space, ToggleGrid);
 
+            InputManager.MouseClick += OnMouseClick;
             InputManager.MouseHeld += OnMouseHeld;
             InputManager.RightClick += OnMouseRightClick;
             InputManager.MouseReleased += OnMouseReleased;
@@ -124,6 +127,56 @@ namespace LoM.Managers
             SetupCamera();
 
             SoundManager.PlayMainTrack();
+        }
+
+        public Rectangle GetBoundsOfCharacter(Character character)
+        {
+            float drawX = character.Tile.X * 32;
+            float drawY = character.Tile.Y * 32;
+            var targetX = drawX;
+            var targetY = drawY;
+
+            if (character.TargetTile != null)
+            {
+                targetX = character.TargetTile.X * 32;
+                targetY = character.TargetTile.Y * 32;
+            }
+            
+            drawX -= (drawX - targetX) * character.MovementPercentage;
+            drawY -= (drawY - targetY) * character.MovementPercentage;
+            return new Rectangle((int) drawX, (int) drawY, TileSize, TileSize);
+        }
+
+        private void OnMouseClick()
+        {
+            foreach (var c in World.Characters)
+            {
+                var bounds = GetBoundsOfCharacter(c);
+                var mouseBounds = GetMouseBounds();
+
+                if (!bounds.Intersects(mouseBounds)) continue;
+                SelectedCharacter = c;
+                return;
+            }
+
+            if (SelectedCharacter == null) return;
+
+            var mouseTile = GetTileAtMouse(Mouse.GetState().X, Mouse.GetState().Y);
+            SelectedCharacter.SetJob(new Job()
+            {
+                Assignee = SelectedCharacter,
+                Assigned = true,
+                JobTime = 0,
+                JobType = JobType.Move,
+                Cancelled = false,
+                Tile = mouseTile
+            });
+        }
+
+        private Rectangle GetMouseBounds()
+        {
+            var mouseWorld = Camera.ScreenToWorld(Mouse.GetState().Position.ToVector2());
+            return new Rectangle((int) mouseWorld.X, (int) mouseWorld.Y, 1, 1);
         }
 
         private void OnTileChanged(Tile obj)
@@ -156,13 +209,18 @@ namespace LoM.Managers
                 BuildManager.GetMode() == BuildMode.Destroy ||
                 BuildManager.GetMode() == BuildMode.WorldObject)
                 BuildTiles();
+            else OnMouseClick();
         }
         
         private void OnMouseRightClick()
         {
-            var tile = GetTileAtMouse(Mouse.GetState().X, Mouse.GetState().Y);
-            if (tile == null) return;
-            JobManager.CancelTileJob(tile);
+            if (SelectedCharacter != null) SelectedCharacter = null;
+            else
+            {
+                var tile = GetTileAtMouse(Mouse.GetState().X, Mouse.GetState().Y);
+                if (tile == null) return;
+                JobManager.CancelTileJob(tile);
+            }
         }
 
         private void BuildTiles()
@@ -436,6 +494,11 @@ namespace LoM.Managers
             {
 
                 DrawCharacter(spriteBatch, c);
+            }
+
+            if (SelectedCharacter != null)
+            {
+                spriteBatch.Draw(ContentChest.HoverSquare, GetBoundsOfCharacter(SelectedCharacter), Color.White);
             }
 
 

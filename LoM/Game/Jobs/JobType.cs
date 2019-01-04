@@ -5,6 +5,7 @@
         Build,
         DestroyTile,
         WorldObject,
-        DestroyWorldObject
+        DestroyWorldObject,
+        Move
     }
 }

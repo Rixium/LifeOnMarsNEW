@@ -126,7 +126,7 @@ namespace LoM.Managers
                 OnJobsComplete?.Invoke();
         }
 
-        private WorldObject CreateWorldObject(Job job)
+        private static WorldObject CreateWorldObject(Job job)
         {
             if (WorldObjectChest.WorldObjectPrototypes.ContainsKey(job.ObjectName) == false)
             {

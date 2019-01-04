@@ -101,6 +101,14 @@ namespace LoM.Game
         {
             if (CurrentJob == null) return;
             if (_path?.Count == 0) CurrentJob.DoWork(deltaTime);
+            if (CurrentJob?.JobTime >= CurrentJob?.RequiredJobTime &&
+                CurrentJob?.Tile == Tile) ClearJob();
+        }
+
+        private void ClearJob()
+        {
+            CurrentJob = null;
+            _path = null;
         }
 
         /// <summary>
@@ -127,7 +135,7 @@ namespace LoM.Game
         private void FindPath()
         {
             _tilePath = new TilePath(Tile, CurrentJob.Tile, World);
-            var path = _tilePath.FindPath();
+            var path = _tilePath.FindPath(CurrentJob.JobType == JobType.Move);
 
             if (path != null)
             {
@@ -156,5 +164,15 @@ namespace LoM.Game
         {
             if (CurrentJob == obj) CurrentJob = null;
         }
+
+        public void SetJob(Job job)
+        {
+            CurrentJob = null;
+            _path = null;
+            TargetTile = Tile;
+            CurrentJob = job;
+            FindPath();
+        }
+
     }
 }

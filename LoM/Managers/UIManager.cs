@@ -146,6 +146,13 @@ namespace LoM.Managers
                 spriteBatch.Draw(button.Image, button.GetPosition(), Color.White);
             }
 
+            if (_gameManager.SelectedCharacter != null)
+            {
+                spriteBatch.DrawString(ContentChest.MainFont, $"Selected: {_gameManager.SelectedCharacter.CharacterType}",
+                    new Vector2(10, Screen.Height - 10 - ContentChest.MainFont.MeasureString($"Selected: {_gameManager.SelectedCharacter.CharacterType}").Y),
+                    Color.White);
+            }
+
             spriteBatch.End();
         }
 

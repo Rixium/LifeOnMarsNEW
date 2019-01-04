@@ -25,7 +25,7 @@ namespace LoM.Pathfinding
             _world = world;
         }
 
-        public Stack<Tile> FindPath()
+        public Stack<Tile> FindPath(bool includeLast)
         {
             if (_startTile.Region != _endTile.Region &&
                 !RegionTileNextTo(_startTile, _endTile)) return null;
@@ -46,7 +46,7 @@ namespace LoM.Pathfinding
 
                 var neighbors = bestFScoreTile.GetNeighbors();
 
-                if (bestFScoreTile == _endTile) return ConstructPath();
+                if (bestFScoreTile == _endTile) return ConstructPath(includeLast);
 
                 foreach (var neighbor in neighbors)
                 {
@@ -102,9 +102,12 @@ namespace LoM.Pathfinding
             return false;
         }
 
-        private Stack<Tile> ConstructPath()
+        private Stack<Tile> ConstructPath(bool includeLast)
         {
             var tile = _cameFrom[_endTile];
+
+            if (includeLast && _endTile.MovementCost != 0) tile = _endTile;
+
             var stack = new Stack<Tile>();
 
             do

@@ -37,7 +37,7 @@ namespace LoM.Util
         public void Zoom(float delta)
         {
             Scale += delta;
-            Scale = MathHelper.Clamp(Scale, -5, MaxZoom);
+            Scale = MathHelper.Clamp(Scale, 1, MaxZoom);
         }
 
         public Vector2 ScreenToWorld(Vector2 screenPosition)
