@@ -12,9 +12,8 @@ namespace LoM
         public ContentChest ContentChest;
         private GameManager _gameManager;
         private MainMenu _mainMenu;
-        private GraphicsDeviceManager _graphics;
+        private readonly GraphicsDeviceManager _graphics;
 
-        private float _lastUpdate;
         private SpriteBatch _spriteBatch;
 
         public Main()
@@ -32,6 +31,10 @@ namespace LoM
         {
             Window.Title = "Life on Mars";
             IsMouseVisible = true;
+
+            // Initialise our prototypes here.
+            WorldObjectChest.LoadPrototypes();
+
             base.Initialize();
         }
 
@@ -67,7 +70,7 @@ namespace LoM
         {
             var deltaTime = (float) gameTime.ElapsedGameTime.TotalSeconds;
             _mainMenu?.Update(deltaTime);
-            _gameManager?.Update(deltaTime * 5);
+            _gameManager?.Update(deltaTime);
             base.Update(gameTime);
         }
 

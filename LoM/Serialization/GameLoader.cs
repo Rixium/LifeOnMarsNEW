@@ -29,8 +29,11 @@ namespace LoM.Serialization
             {
                 var x = worldObject.X;
                 var y = worldObject.Y;
-                var objectType = worldObject.ObjectType;
-                worldTiles[x, y].PlaceObject(new WorldObject(worldTiles[x, y], (ObjectType) objectType));
+                var objectName = worldObject.ObjectName;
+
+                var prototype = WorldObjectChest.WorldObjectPrototypes[objectName];
+                var newObject = prototype.Place(worldTiles[x, y]);
+                worldTiles[x, y].PlaceObject(newObject);
             }
 
             return world;

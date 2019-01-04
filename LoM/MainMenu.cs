@@ -59,7 +59,7 @@ namespace LoM
 
         private void LoadGame()
         {
-            var saveDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "/LifeOnMars";
+            if (_saves.Length == 0) return;
             var loadWorld = GameLoader.LoadWorld(_saves[0]);
             if (loadWorld == null) return;
             OnLoadGame?.Invoke(loadWorld);

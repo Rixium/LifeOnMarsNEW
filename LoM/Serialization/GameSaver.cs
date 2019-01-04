@@ -42,8 +42,9 @@ namespace LoM.Serialization
                 {
                     X = tile.X,
                     Y = tile.Y,
-                    ObjectType = (int) tile.WorldObject.ObjectType
+                    ObjectName = tile.WorldObject.ObjectName
                 };
+
                 worldObjectData.Add(data);
             }
 

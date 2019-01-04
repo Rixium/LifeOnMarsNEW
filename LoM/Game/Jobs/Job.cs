@@ -1,24 +1,22 @@
 ﻿using System;
-using LoM.Constants;
 
 namespace LoM.Game.Jobs
 {
     public class Job
     {
-
-        public Tile Tile;
-        public float JobTime;
-        public float RequiredJobTime;
-
         public bool Assigned;
         public Character Assignee;
 
         public bool Cancelled;
+        public float JobTime;
+        public Action<Job> OnJobCancelled;
 
         public Action<Job> OnJobComplete;
-        public Action<Job> OnJobCancelled;
+        public float RequiredJobTime;
+
+        public Tile Tile;
         public JobType JobType { get; set; }
-        public ObjectType ObjectType { get; set; }
+        public string ObjectName { get; set; }
 
         public void DoWork(float deltaTime)
         {
@@ -35,6 +33,5 @@ namespace LoM.Game.Jobs
             Cancelled = true;
             OnJobCancelled?.Invoke(this);
         }
-
     }
 }

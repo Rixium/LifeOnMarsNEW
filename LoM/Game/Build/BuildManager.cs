@@ -8,7 +8,7 @@ namespace LoM.Game.Build
     {
 
         public BuildMode BuildMode;
-        public ObjectType BuildObject;
+        public string BuildObject;
 
         public Action OnBuildModeChange;
 
@@ -56,7 +56,7 @@ namespace LoM.Game.Build
             OnBuildModeChange?.Invoke();
         }
 
-        public void SetBuildObject(ObjectType objectType)
+        public void SetBuildObject(string objectType)
         {
             if (BuildMode == BuildMode.WorldObject && objectType == BuildObject) return;
             SetMode(BuildMode.WorldObject);

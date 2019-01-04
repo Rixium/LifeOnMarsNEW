@@ -1,23 +1,45 @@
-﻿using System.Text;
-using LoM.Constants;
+﻿using LoM.Constants;
 
 namespace LoM.Game
 {
     public class WorldObject
     {
+        public string ObjectName;
 
-        public WorldObject(Tile tile, ObjectType objectType)
+        protected WorldObject()
         {
-            Tile = tile;
-            ObjectType = objectType;
         }
 
-        public Tile Tile { get; }
-        public ObjectType ObjectType { get; }
+        public Tile Tile { get; private set; }
+        public ObjectType ObjectType { get; private set; }
 
         public bool HollowPlacement { get; set; } = true;
         public bool MergesWithNeighbors { get; set; } = true;
-        public float MovementCost { get; set; } = 0;
+        public float MovementCost { get; set; }
 
+        public WorldObject Place(Tile tile)
+        {
+            return new WorldObject
+            {
+                Tile = tile,
+                ObjectName = this.ObjectName,
+                ObjectType = this.ObjectType,
+                HollowPlacement = this.HollowPlacement,
+                MergesWithNeighbors = this.MergesWithNeighbors,
+                MovementCost = this.MovementCost
+            };
+        }
+
+        public static WorldObject CreatePrototype(string objectName, bool hollowPlacement, bool mergeWithNeighbors,
+            float movementCost)
+        {
+            return new WorldObject
+            {
+                ObjectName = objectName,
+                HollowPlacement = hollowPlacement,
+                MergesWithNeighbors = mergeWithNeighbors,
+                MovementCost = movementCost
+            };
+        }
     }
 }

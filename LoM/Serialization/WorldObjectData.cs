@@ -5,7 +5,7 @@
 
         public int X;
         public int Y;
-        public int ObjectType;
+        public string ObjectName;
 
     }
 }

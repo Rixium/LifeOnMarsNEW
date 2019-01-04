@@ -48,6 +48,7 @@
     <Compile Include="Game\Character.cs" />
     <Compile Include="Game\Region.cs" />
     <Compile Include="Game\WorldObject.cs" />
+    <Compile Include="Game\WorldObjectChest.cs" />
     <Compile Include="MainMenu.cs" />
     <Compile Include="Managers\JobManager.cs" />
     <Compile Include="Managers\RegionManager.cs" />

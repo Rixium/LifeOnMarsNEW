@@ -67,7 +67,7 @@ namespace LoM.Managers
             };
 
             button = new Button(10, button.Y + button.GetBounds().Height + 10, buttonSettings);
-            _inputManager.RegisterUIElement(() => { _buildManager.SetBuildObject(ObjectType.Wall); }, button);
+            _inputManager.RegisterUIElement(() => { _buildManager.SetBuildObject("Wall"); }, button);
             button.OnClick += _soundManager.OnButtonClick;
             UIElements.Add(button);
 
