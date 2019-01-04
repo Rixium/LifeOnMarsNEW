@@ -11,11 +11,11 @@ namespace LoM.Game
 
         public static void LoadPrototypes()
         {
-            CreatePrototype("Wall", true, true, 0);
-            CreatePrototype("Door", false, false, 1);
+            CreatePrototype("Wall", true, true, true, true, 0);
+            CreatePrototype("Door", false, false, false, true, 1);
         }
 
-        private static void CreatePrototype(string name, bool hollowPlacement, bool mergeWithNeighbors,
+        private static void CreatePrototype(string name, bool hollowPlacement, bool mergeWithNeighbors, bool dragBuild, bool encloses,
             float movementCost)
         {
             if (WorldObjectPrototypes.ContainsKey(name))
@@ -25,7 +25,7 @@ namespace LoM.Game
             }
 
             WorldObjectPrototypes.Add(name,
-                WorldObject.CreatePrototype(name, hollowPlacement, mergeWithNeighbors, movementCost));
+                WorldObject.CreatePrototype(name, hollowPlacement, mergeWithNeighbors, dragBuild, encloses, movementCost));
         }
 
     }

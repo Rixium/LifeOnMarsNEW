@@ -73,6 +73,17 @@ namespace LoM.Managers
 
             buttonSettings = new ElementSettings()
             {
+                ImagePressed = _gameManager.ContentChest.DoorButtonPressed,
+                ImageOff = _gameManager.ContentChest.DoorButtonOff
+            };
+
+            button = new Button(10, button.Y + button.GetBounds().Height + 10, buttonSettings);
+            _inputManager.RegisterUIElement(() => { _buildManager.SetBuildObject("Door"); }, button);
+            button.OnClick += _soundManager.OnButtonClick;
+            UIElements.Add(button);
+
+            buttonSettings = new ElementSettings()
+            {
                 ImagePressed = _gameManager.ContentChest.Play,
                 ImageOff = _gameManager.ContentChest.Play
             };
@@ -104,6 +115,7 @@ namespace LoM.Managers
             _inputManager.RegisterUIElement(() => { _gameManager.SaveGame(); }, button);
             button.OnClick += _soundManager.OnButtonClick;
             UIElements.Add(button);
+
         }
 
         private void OnButtonClick(UIElement element)

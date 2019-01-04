@@ -50,6 +50,9 @@ namespace LoM.Util
         public Texture2D NewGameButtonPressed;
         public Texture2D NewGameButtonOff;
 
+        public Texture2D DoorButtonPressed;
+        public Texture2D DoorButtonOff;
+
         public Texture2D Helmet;
 
         public ContentChest(ContentManager content)
@@ -107,6 +110,8 @@ namespace LoM.Util
             SaveGameButtonPressed = _content.Load<Texture2D>("UI/Buttons/saveGameButton_Pressed");
             LoadGameButtonOff = _content.Load<Texture2D>("UI/Buttons/loadGameButton");
             LoadGameButtonPressed = _content.Load<Texture2D>("UI/Buttons/loadGameButton_Pressed");
+            DoorButtonOff = _content.Load<Texture2D>("UI/Buttons/doorButton");
+            DoorButtonPressed = _content.Load<Texture2D>("UI/Buttons/doorButton_Pressed");
 
             Pause = _content.Load<Texture2D>("UI/Buttons/pause");
             Play = _content.Load<Texture2D>("UI/Buttons/play");

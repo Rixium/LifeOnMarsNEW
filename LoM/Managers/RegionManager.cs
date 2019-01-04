@@ -55,7 +55,8 @@ namespace LoM.Managers
         private static bool ShouldQueue(Tile tile, Region newRegion)
         {
             if (tile == null) return false;
-            if (tile.MovementCost == 0)
+            if (tile.MovementCost == 0 ||
+                tile.WorldObject != null && tile.WorldObject.Encloses)
             {
                 tile.Region = newRegion;
                 return false;
@@ -101,7 +102,8 @@ namespace LoM.Managers
         private static bool ShouldFloodFill(Tile tile, Region oldRegion)
         {
             if (tile == null) return false;
-            if (tile.MovementCost == 0) return false;
+            if (tile.WorldObject == null) return true;
+            if (tile.WorldObject.Encloses) return false;
             return tile.Region == oldRegion;
         }
 

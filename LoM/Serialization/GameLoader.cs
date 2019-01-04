@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using LoM.Constants;
 using LoM.Game;
 using Newtonsoft.Json;
 
@@ -38,6 +37,5 @@ namespace LoM.Serialization
 
             return world;
         }
-
     }
 }

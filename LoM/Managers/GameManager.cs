@@ -202,6 +202,7 @@ namespace LoM.Managers
             return World.GetTileAt(tileX, tileY);
         }
 
+//      TODO Some kind of check to make sure that the tile we are selecting to build on isn't occupied, or make sure it is occupied by a tile we MUST build on, such as doors need to be on a wall.
         private void ContinueDrag()
         {
             _tileXEndDrag = Mouse.GetState().X;
@@ -213,7 +214,26 @@ namespace LoM.Managers
             _tileXEndDrag = tile.X;
             _tileYEndDrag = tile.Y;
 
+
+            if (BuildManager.BuildMode == BuildMode.WorldObject)
+            {
+                var obj = BuildManager.BuildObject;
+                var proto = WorldObjectChest.WorldObjectPrototypes[obj];
+                if (!proto.DragBuild)
+                {
+                    SelectTileAt(_tileXEndDrag, _tileYEndDrag);
+                    return;
+                }
+            }
             SelectTilesInRange(_tileXStartDrag, _tileYStartDrag, _tileXEndDrag, _tileYEndDrag);
+        }
+
+        private void SelectTileAt(int tileX, int tileY)
+        {
+            _buildTiles = new List<Tile>();
+            var tile = World.GetTileAt(tileX, tileY);
+            if (tile == null) return;
+            _buildTiles.Add(tile);
         }
 
         private void OnMouseReleased()
@@ -237,6 +257,7 @@ namespace LoM.Managers
             _buildTiles = null;
         }
 
+        // TODO THIS NEEDS A BIG REFACTOR.
         private void SelectTilesInRange(int xStart, int yStart, int xEnd, int yEnd)
         {
             _buildTiles = new List<Tile>();
@@ -259,6 +280,8 @@ namespace LoM.Managers
             for (var y = yStart; y <= yEnd; y++)
             {
                 // TODO CHECK THE OBJECT TYPE FOR THIS. We might want only walls to be "hollow placed", for rooms.
+                
+
                 if (BuildManager.BuildMode == BuildMode.WorldObject)
                     if(x != xStart && x != xEnd && y != yStart && y != yEnd) continue;
                 var tile = World.GetTileAt(x, y);
@@ -310,10 +333,9 @@ namespace LoM.Managers
             
             spriteBatch.Begin(SpriteSortMode.Immediate, null, SamplerState.PointClamp, null, null, null, Camera.Get());
 
-            /*for (var i = renderStartX; i < renderEndX; i++)
-            for (var j = renderStartY; j < renderEndY; j++)
-            {*/ foreach( var tile in World.Tiles) { 
-                //var tile = World.Tiles[i, j];
+            for (var i = renderStartX; i < renderEndX; i++)
+            for (var j = renderStartY; j < renderEndY; j++) {
+                var tile = World.Tiles[i, j];
 
                 if (_showGrid && tile.Type != TileType.None)
                     spriteBatch.Draw(ContentChest.GridSquare, new Vector2(tile.X * TileSize, tile.Y * TileSize),
@@ -451,8 +473,8 @@ namespace LoM.Managers
 
         private void DrawWorldObject(SpriteBatch spriteBatch, WorldObject worldObject)
         {
-            var objectType = worldObject.ObjectType.ToString();
-            var name = $"{objectType}_";
+            var objectType = worldObject.ObjectName;
+            var name = $"{objectType}";
 
             if (worldObject.MergesWithNeighbors)
             {
@@ -477,13 +499,13 @@ namespace LoM.Managers
             var southTile = World.GetTileAt(tileX, tileY + 1);
             var westTile = World.GetTileAt(tileX - 1, tileY);
 
-            if (northTile?.WorldObject?.ObjectType == worldObject.ObjectType)
+            if (northTile?.WorldObject?.ObjectName == worldObject.ObjectName)
                 _stringBuilder.Append("N");
-            if (eastTile?.WorldObject?.ObjectType == worldObject.ObjectType)
+            if (eastTile?.WorldObject?.ObjectName == worldObject.ObjectName)
                 _stringBuilder.Append("E");
-            if (southTile?.WorldObject?.ObjectType == worldObject.ObjectType)
+            if (southTile?.WorldObject?.ObjectName == worldObject.ObjectName)
                 _stringBuilder.Append("S");
-            if (westTile?.WorldObject?.ObjectType == worldObject.ObjectType)
+            if (westTile?.WorldObject?.ObjectName == worldObject.ObjectName)
                 _stringBuilder.Append("W");
 
             return _stringBuilder.ToString();
