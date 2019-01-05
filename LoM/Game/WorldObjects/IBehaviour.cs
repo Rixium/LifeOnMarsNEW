@@ -2,10 +2,10 @@
 {
     public interface IBehaviour
     {
-
+        
         bool IsPassable();
         void Update(float deltaTime);
-        IBehaviour Clone();
+        IBehaviour Clone(IRenderer renderer);
         void SetOwner(WorldObject clonedCopy);
 
     }

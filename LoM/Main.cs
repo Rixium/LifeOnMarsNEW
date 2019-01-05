@@ -31,10 +31,6 @@ namespace LoM
         {
             Window.Title = "Life on Mars";
             IsMouseVisible = true;
-
-            // Initialise our prototypes here.
-            WorldObjectChest.LoadPrototypes();
-
             base.Initialize();
         }
 
@@ -48,6 +44,8 @@ namespace LoM
             _mainMenu.OnLoadGame += LoadGame;
 
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            WorldObjectChest.LoadPrototypes(ContentChest);
         }
 
         private void NewGame()

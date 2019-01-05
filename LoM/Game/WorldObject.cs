@@ -23,6 +23,7 @@ namespace LoM.Game
         public float MovementCost { get; set; }
 
         public bool IsPassable => Behaviour == null || Behaviour.IsPassable();
+        public Texture2D Image { get; set; }
 
         public IBehaviour Behaviour;
         private IRenderer _renderer;
@@ -39,12 +40,11 @@ namespace LoM.Game
                 DragBuild = DragBuild,
                 Encloses = Encloses,
                 MovementCost = MovementCost,
-                Behaviour = Behaviour?.Clone(),
                 _renderer = _renderer?.Clone()
             };
 
+            clonedCopy.Behaviour = Behaviour?.Clone(clonedCopy._renderer);
             clonedCopy.Behaviour?.SetOwner(clonedCopy);
-            clonedCopy._renderer?.SetOwner(clonedCopy);
 
             return clonedCopy;
         }
@@ -69,12 +69,13 @@ namespace LoM.Game
 
         public void Update(float deltaTime)
         {
+            _renderer?.Update(deltaTime);
             Behaviour?.Update(deltaTime);
         }
 
-        public void Draw(SpriteBatch spriteBatch, ContentChest contentChest)
+        public void Draw(SpriteBatch spriteBatch)
         {
-            _renderer?.Draw(spriteBatch, contentChest);
+            _renderer?.Draw(spriteBatch, this);
         }
 
     }

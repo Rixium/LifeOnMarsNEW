@@ -138,7 +138,7 @@ namespace LoM.Game
 
         private void FindPath()
         {
-            _tilePath = new TilePath(Tile, CurrentJob.Tile, World);
+            _tilePath = new TilePath(Tile, CurrentJob.Tile);
             var path = _tilePath.FindPath(CurrentJob.JobType == JobType.Move);
 
             if (path != null)

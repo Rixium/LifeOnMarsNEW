@@ -5,13 +5,12 @@ namespace LoM.Util
 {
     public class RenderHelper
     {
-
-        private static StringBuilder _stringBuilder = new StringBuilder();
+        private static readonly StringBuilder _stringBuilder = new StringBuilder();
 
         public static string CreateNeighborString(WorldObject worldObject)
         {
             _stringBuilder.Clear();
-            
+
             var northTile = worldObject.Tile.North();
             var eastTile = worldObject.Tile.East();
             var southTile = worldObject.Tile.South();
@@ -28,6 +27,5 @@ namespace LoM.Util
 
             return _stringBuilder.ToString();
         }
-
     }
 }

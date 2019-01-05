@@ -6,32 +6,35 @@ namespace LoM.Game.WorldObjects
 {
     public class StaticRenderer : IRenderer
     {
-        public WorldObject Owner;
+        public ContentChest ContentChest;
 
-        public void Draw(SpriteBatch spriteBatch, ContentChest contentChest)
+        public void Draw(SpriteBatch spriteBatch, WorldObject owner)
         {
-            var objectType = Owner.ObjectName;
+            var objectType = owner.ObjectName;
             var name = $"{objectType}";
 
-            if (Owner.MergesWithNeighbors)
+            if (owner.MergesWithNeighbors)
             {
-                var neighborString = RenderHelper.CreateNeighborString(Owner);
+                var neighborString = RenderHelper.CreateNeighborString(owner);
                 if (!string.IsNullOrWhiteSpace(neighborString))
                     name = $"{objectType}_{neighborString}";
             }
 
-            spriteBatch.Draw(contentChest.WorldObjects[name], new Vector2(Owner.Tile.X * 32, Owner.Tile.Y * 32),
+            // TODO THIS TILE SIZE.
+            spriteBatch.Draw(ContentChest.WorldObjects[name], new Vector2(owner.Tile.X * 32, owner.Tile.Y * 32),
                 Color.White);
+        }
+
+        public void Update(float deltaTime)
+        {
         }
 
         public IRenderer Clone()
         {
-            return new StaticRenderer();
-        }
-
-        public void SetOwner(WorldObject owner)
-        {
-            Owner = owner;
+            return new StaticRenderer
+            {
+                ContentChest = ContentChest
+            };
         }
     }
 }

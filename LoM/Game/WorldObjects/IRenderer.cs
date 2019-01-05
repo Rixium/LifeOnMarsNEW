@@ -1,14 +1,11 @@
-﻿using LoM.Util;
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 
 namespace LoM.Game.WorldObjects
 {
     public interface IRenderer
     {
-
-        void Draw(SpriteBatch spriteBatch, ContentChest contentChest);
+        void Draw(SpriteBatch spriteBatch, WorldObject owner);
+        void Update(float deltaTime);
         IRenderer Clone();
-        void SetOwner(WorldObject owner);
-
     }
 }

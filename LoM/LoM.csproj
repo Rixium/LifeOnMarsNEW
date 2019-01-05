@@ -50,9 +50,9 @@
     <Compile Include="Game\WorldObject.cs" />
     <Compile Include="Game\WorldObjectChest.cs" />
     <Compile Include="Game\WorldObjects\DoorBehaviour.cs" />
-    <Compile Include="Game\WorldObjects\DoorRenderer.cs" />
     <Compile Include="Game\WorldObjects\IBehaviour.cs" />
     <Compile Include="Game\WorldObjects\IRenderer.cs" />
+    <Compile Include="Game\WorldObjects\TransitionRenderer.cs" />
     <Compile Include="Game\WorldObjects\StaticRenderer.cs" />
     <Compile Include="MainMenu.cs" />
     <Compile Include="Managers\JobManager.cs" />

@@ -11,18 +11,16 @@ namespace LoM.Pathfinding
         private readonly Tile _endTile;
 
         private readonly Tile _startTile;
-        private readonly World _world;
         private readonly Dictionary<Tile, Tile> _cameFrom = new Dictionary<Tile, Tile>();
 
         private readonly HashSet<Tile> _closedList = new HashSet<Tile>();
         private readonly Dictionary<Tile, int> _fScores = new Dictionary<Tile, int>();
         private readonly ConcurrentPriorityQueue<Tile, int> _openList = new ConcurrentPriorityQueue<Tile, int>();
 
-        public TilePath(Tile startTile, Tile endTile, World world)
+        public TilePath(Tile startTile, Tile endTile)
         {
             _startTile = startTile;
             _endTile = endTile;
-            _world = world;
         }
 
         public Stack<Tile> FindPath(bool includeLast)

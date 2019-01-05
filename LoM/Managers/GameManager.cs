@@ -205,11 +205,16 @@ namespace LoM.Managers
 
         private void OnMouseHeld()
         {
+            if (SelectedCharacter != null)
+            {
+                OnMouseClick();
+                return;
+            } 
+
             if (BuildManager.GetMode() == BuildMode.Tile ||
                 BuildManager.GetMode() == BuildMode.Destroy ||
                 BuildManager.GetMode() == BuildMode.WorldObject)
                 BuildTiles();
-            else OnMouseClick();
         }
         
         private void OnMouseRightClick()
@@ -414,7 +419,7 @@ namespace LoM.Managers
             while (objects.Count > 0)
             {
                 var worldObject = objects.Dequeue().WorldObject;
-                worldObject.Draw(spriteBatch, ContentChest);
+                worldObject.Draw(spriteBatch);
             }
 
             if (_buildTiles != null)
@@ -489,7 +494,7 @@ namespace LoM.Managers
             }
 
 
-            foreach (var c in World.Characters.OrderBy(character => character.Tile.Y))
+            foreach (var c in World.Characters.OrderBy(character =>  character.Tile.Y))
             {
 
                 DrawCharacter(spriteBatch, c);
@@ -523,14 +528,15 @@ namespace LoM.Managers
 
             spriteBatch.Draw(ContentChest.CharacterTypes[character.CharacterType], new Rectangle((int)drawX, (int)drawY, TileSize, TileSize), Color.White);
 
+            // TODO Character equipment instead of this, plus stuff like comfort rating etc, could make it quite sophisticated.
             if (character.Tile.Region?.SpaceSafe == false || character.Tile.Region == null)
             {
                 spriteBatch.Draw(ContentChest.Helmet, new Rectangle((int)drawX, (int)drawY, TileSize, TileSize), Color.White);
             }
 
-            var text = character.CharacterType;
+            /*var text = character.CharacterType;
             var textWidth = ContentChest.MainFont.MeasureString(text).X;
-            spriteBatch.DrawString(ContentChest.MainFont, text, new Vector2(drawX + 16 - textWidth / 2, drawY - 10), Color.White);
+            spriteBatch.DrawString(ContentChest.MainFont, text, new Vector2(drawX + 16 - textWidth / 2, drawY - 10), Color.White);*/
         }
 
         private void DrawUI(SpriteBatch spriteBatch)
