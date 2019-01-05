@@ -1,4 +1,7 @@
 ﻿using LoM.Constants;
+using LoM.Game.WorldObjects;
+using LoM.Util;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace LoM.Game
 {
@@ -19,25 +22,37 @@ namespace LoM.Game
         public bool Encloses { get; set; }
         public float MovementCost { get; set; }
 
+        public bool IsPassable => Behaviour == null || Behaviour.IsPassable();
+
+        public IBehaviour Behaviour;
+        private IRenderer _renderer;
+
         public WorldObject Place(Tile tile)
         {
-            return new WorldObject
+            var clonedCopy = new WorldObject
             {
                 Tile = tile,
-                ObjectName = this.ObjectName,
-                ObjectType = this.ObjectType,
-                HollowPlacement = this.HollowPlacement,
-                MergesWithNeighbors = this.MergesWithNeighbors,
-                DragBuild = this.DragBuild,
-                Encloses = this.Encloses,
-                MovementCost = this.MovementCost
+                ObjectName = ObjectName,
+                ObjectType = ObjectType,
+                HollowPlacement = HollowPlacement,
+                MergesWithNeighbors = MergesWithNeighbors,
+                DragBuild = DragBuild,
+                Encloses = Encloses,
+                MovementCost = MovementCost,
+                Behaviour = Behaviour?.Clone(),
+                _renderer = _renderer?.Clone()
             };
+
+            clonedCopy.Behaviour?.SetOwner(clonedCopy);
+            clonedCopy._renderer?.SetOwner(clonedCopy);
+
+            return clonedCopy;
         }
 
         public static WorldObject CreatePrototype(string objectName, bool hollowPlacement, bool mergeWithNeighbors,
             bool dragBuild,
             bool encloses,
-            float movementCost)
+            float movementCost, IBehaviour behaviour, IRenderer renderer)
         {
             return new WorldObject
             {
@@ -46,8 +61,21 @@ namespace LoM.Game
                 MergesWithNeighbors = mergeWithNeighbors,
                 MovementCost = movementCost,
                 DragBuild = dragBuild,
-                Encloses = encloses
+                Encloses = encloses,
+                Behaviour = behaviour,
+                _renderer = renderer
             };
         }
+
+        public void Update(float deltaTime)
+        {
+            Behaviour?.Update(deltaTime);
+        }
+
+        public void Draw(SpriteBatch spriteBatch, ContentChest contentChest)
+        {
+            _renderer?.Draw(spriteBatch, contentChest);
+        }
+
     }
 }

@@ -117,7 +117,7 @@ namespace LoM.Managers
             else if (job.JobType == JobType.WorldObject)
             {
                 var newWorldObject = CreateWorldObject(job);
-                job.Tile.PlaceObject(newWorldObject);
+                job.Tile.World.PlaceWorldObject(job.Tile, newWorldObject);
             }
 
             OnJobComplete?.Invoke(job);

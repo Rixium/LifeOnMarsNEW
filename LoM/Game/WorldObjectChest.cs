@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using LoM.Game.WorldObjects;
 
 namespace LoM.Game
 {
@@ -11,12 +12,12 @@ namespace LoM.Game
 
         public static void LoadPrototypes()
         {
-            CreatePrototype("Wall", true, true, true, true, 0);
-            CreatePrototype("Door", false, false, false, true, 1);
+            CreatePrototype("Wall", true, true, true, true, 0, null, new StaticRenderer());
+            CreatePrototype("Door", false, false, false, true, 1, new DoorBehaviour(), new DoorRenderer());
         }
 
         private static void CreatePrototype(string name, bool hollowPlacement, bool mergeWithNeighbors, bool dragBuild, bool encloses,
-            float movementCost)
+            float movementCost, IBehaviour behaviour, IRenderer renderer)
         {
             if (WorldObjectPrototypes.ContainsKey(name))
             {
@@ -24,8 +25,11 @@ namespace LoM.Game
                 return;
             }
 
-            WorldObjectPrototypes.Add(name,
-                WorldObject.CreatePrototype(name, hollowPlacement, mergeWithNeighbors, dragBuild, encloses, movementCost));
+            var worldObject =
+                WorldObject.CreatePrototype(name, hollowPlacement, mergeWithNeighbors, dragBuild, encloses,
+                    movementCost, behaviour, renderer);
+
+            WorldObjectPrototypes.Add(name, worldObject);
         }
 
     }

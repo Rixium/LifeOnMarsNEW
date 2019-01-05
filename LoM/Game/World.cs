@@ -15,6 +15,7 @@ namespace LoM.Game
         public Tile[,] Tiles;
 
         public List<Character> Characters { get; } = new List<Character>();
+        public List<WorldObject> WorldObjects { get; } = new List<WorldObject>();
 
         public World(int width, int height)
         {
@@ -44,6 +45,8 @@ namespace LoM.Game
         {
             foreach(var character in Characters)
                 character.Update(deltaTime);
+            foreach (var worldObject in WorldObjects)
+                worldObject.Update(deltaTime);
         }
 
         public Tile GetTileAt(int x, int y)
@@ -60,6 +63,12 @@ namespace LoM.Game
         public Job GetJob(Character character)
         {
             return OnJobRequest?.Invoke(character);
+        }
+
+        public void PlaceWorldObject(Tile tile, WorldObject worldObject)
+        {
+            if(tile.PlaceObject(worldObject))
+                WorldObjects.Add(worldObject);
         }
 
     }

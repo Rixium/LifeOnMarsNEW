@@ -53,6 +53,10 @@ namespace LoM.Game
                 GetNextTile();
                 return;
             }
+            
+            if(TargetTile.WorldObject != null)
+                if (TargetTile.WorldObject.IsPassable == false)
+                    return;
 
             MovementPercentage += Speed * deltaTime;
             MovementPercentage = MathHelper.Clamp(MovementPercentage, 0, 1);

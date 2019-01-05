@@ -32,7 +32,7 @@ namespace LoM.Serialization
 
                 var prototype = WorldObjectChest.WorldObjectPrototypes[objectName];
                 var newObject = prototype.Place(worldTiles[x, y]);
-                worldTiles[x, y].PlaceObject(newObject);
+                world.PlaceWorldObject(worldTiles[x, y], newObject);
             }
 
             return world;
