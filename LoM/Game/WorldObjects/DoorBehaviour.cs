@@ -7,8 +7,11 @@ namespace LoM.Game.WorldObjects
     public class DoorBehaviour : IBehaviour
     {
 
+        public float OpeningTime = 0.5f;
         public WorldObject Owner;
         public World World => Owner.Tile.World;
+
+        private bool shown = false;
 
         public float OpenPercentage;
 
@@ -19,20 +22,23 @@ namespace LoM.Game.WorldObjects
 
         public void Update(float deltaTime)
         {
+            var changeAmount = deltaTime / OpeningTime;
+
             var characterNear = false;
             foreach (var c in World.Characters)
             {
-                if (!Owner.Tile.GetNeighbors().Contains(c.Tile) &&
-                    Owner.Tile != c.Tile)
+                if (Owner.Tile != c.TargetTile)
                     continue;
 
-                OpenPercentage += 0.1f;
+                OpenPercentage += changeAmount;
                 characterNear = true;
                 break;
             }
 
+
+
             if (!characterNear)
-                OpenPercentage -= 0.1f;
+                OpenPercentage -= changeAmount;
             
             OpenPercentage = MathHelper.Clamp(OpenPercentage, 0, 1);
         }
