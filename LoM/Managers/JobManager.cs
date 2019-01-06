@@ -128,13 +128,7 @@ namespace LoM.Managers
 
         private static WorldObject CreateWorldObject(Job job)
         {
-            if (WorldObjectChest.WorldObjectPrototypes.ContainsKey(job.ObjectName) == false)
-            {
-                Console.WriteLine($"Prototype with name {job.ObjectName} could not be found.");
-                return null;
-            }
-            var prototype = WorldObjectChest.WorldObjectPrototypes[job.ObjectName];
-            return prototype.Place(job.Tile);
+            return job.WorldObject?.Place(job.Tile);
         }
 
         public List<Job> GetJobs()
@@ -146,12 +140,14 @@ namespace LoM.Managers
         {
             if (buildTiles == null || buildTiles.Count == 0) return;
 
+            var worldObjectPrototype = WorldObjectChest.WorldObjectPrototypes[_buildManager.BuildObject];
             foreach (var tile in buildTiles)
             {
                 AddJob(new Job
                 {
                     JobType = JobType.WorldObject,
-                    ObjectName = _buildManager.BuildObject,
+                    WorldObject = worldObjectPrototype,
+                    ItemRequirements = worldObjectPrototype.ItemRequirements,
                     RequiredJobTime = JobTime,
                     Tile = tile,
                     OnJobComplete = JobComplete,

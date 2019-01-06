@@ -6,6 +6,7 @@
 	"CanRotate":true,
 	"Encloses":true,
 	"MovementCost":1,
+	"DestroyOnPlace":true,
 	"Renderer": {
 		"Name":"TransitionRenderer",
 		"Textures": [
@@ -32,5 +33,11 @@
 				"Value":0.5
 			}
 		]
-	}
+	},
+	"ItemRequirements": [
+		{
+			"Type":"IronPlate",
+			"Amount":1
+		}
+	]
 }

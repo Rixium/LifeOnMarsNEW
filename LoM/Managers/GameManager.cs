@@ -404,11 +404,14 @@ namespace LoM.Managers
             for (var y = yStart; y <= yEnd; y++)
             {
                 // TODO CHECK THE OBJECT TYPE FOR THIS. We might want only walls to be "hollow placed", for rooms.
+                // TODO REFACTOR
+
+                WorldObject proto = null;
 
                 if (BuildManager.BuildMode == BuildMode.WorldObject)
                 {
-                    var buildItem = WorldObjectChest.WorldObjectPrototypes[BuildManager.BuildObject];
-                    if (buildItem.HollowPlacement && x != xStart && x != xEnd && y != yStart && y != yEnd) continue;
+                    proto = WorldObjectChest.WorldObjectPrototypes[BuildManager.BuildObject];
+                    if (proto.HollowPlacement && x != xStart && x != xEnd && y != yStart && y != yEnd) continue;
                 }
                 
                 var tile = World.GetTileAt(x, y);
@@ -416,9 +419,10 @@ namespace LoM.Managers
                 if (_buildTiles.Count == 0 && tile.WorldObject != null && BuildManager.BuildMode == BuildMode.Destroy)
                     _isDestroyWorldObjects = true;
 
+
                 if (tile == null || tile.Type != TileType.None && BuildManager.BuildMode == BuildMode.Tile ||
                     (tile.Type == TileType.None && tile.WorldObject == null) && BuildManager.BuildMode == BuildMode.Destroy || (tile.WorldObject != null &&
-                    BuildManager.BuildMode == BuildMode.WorldObject)) continue;
+                    BuildManager.BuildMode == BuildMode.WorldObject && !proto.DestroyOnPlace)) continue;
 
                 if (BuildManager.BuildMode == BuildMode.WorldObject && tile.Type == TileType.None)
                         continue;

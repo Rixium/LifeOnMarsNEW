@@ -50,7 +50,7 @@ namespace LoM.Pathfinding
                 foreach (var neighbor in neighbors)
                 {
                     if (neighbor == null) continue;
-                    if (neighbor.MovementCost == 0) continue;
+                    if (neighbor.MovementCost == 0 && neighbor != _endTile) continue;
                     if (_closedList.Contains(neighbor)) continue;
 
                     int fScore = _fScores[bestFScoreTile] + Cost(bestFScoreTile, neighbor);

@@ -10,8 +10,12 @@
         public bool Encloses;
         public bool CanRotate;
         public float MovementCost;
+        public bool DestroyOnPlace;
+        public bool StoresItems;
         public RendererData Renderer;
         public BehaviourData Behaviour;
+
+        public ItemRequirements[] ItemRequirements;
 
     }
 }

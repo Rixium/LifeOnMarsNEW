@@ -45,7 +45,8 @@ namespace LoM.Game
 
         public bool PlaceObject(WorldObject worldObject)
         {
-            if (WorldObject != null) return false;
+            if(WorldObject != null
+               && !worldObject.DestroyOnPlace) return false;
 
             WorldObject = worldObject;
             OnTileChanged?.Invoke(this);

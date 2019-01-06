@@ -5,6 +5,7 @@
 	"DragBuild":true,
 	"Encloses":false,
 	"MovementCost":1,
+	"StoresItems":true,
 	"Renderer": {
 		"Name":"StaticRenderer"
 	}

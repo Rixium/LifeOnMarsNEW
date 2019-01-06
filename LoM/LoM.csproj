@@ -62,6 +62,7 @@
     <Compile Include="Pathfinding\TilePath.cs" />
     <Compile Include="Serialization\Data\BehaviourData.cs" />
     <Compile Include="Serialization\Data\ItemData.cs" />
+    <Compile Include="Serialization\Data\ItemRequirements.cs" />
     <Compile Include="Serialization\Data\Parameters.cs" />
     <Compile Include="Serialization\GameLoader.cs" />
     <Compile Include="Serialization\GameSaver.cs" />

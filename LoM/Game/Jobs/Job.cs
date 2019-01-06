@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using LoM.Serialization.Data;
 
 namespace LoM.Game.Jobs
 {
@@ -16,16 +18,25 @@ namespace LoM.Game.Jobs
 
         public Tile Tile;
         public JobType JobType { get; set; }
-        public string ObjectName { get; set; }
+
+        public WorldObject WorldObject { get; set; }
+        public ItemRequirements[] ItemRequirements { get; set; }
+
 
         public void DoWork(float deltaTime)
         {
             if (Cancelled) return;
+            if (ItemsRequired() != null) return;
 
             JobTime += deltaTime;
 
             if (JobTime >= RequiredJobTime)
                 OnJobComplete?.Invoke(this);
+        }
+
+        private ItemRequirements ItemsRequired()
+        {
+            return ItemRequirements?.FirstOrDefault(item => item.Amount > 0);
         }
 
         public void Cancel()

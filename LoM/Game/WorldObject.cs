@@ -1,36 +1,40 @@
 ﻿using System;
 using LoM.Constants;
 using LoM.Game.WorldObjects;
-using LoM.Util;
+using LoM.Serialization.Data;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace LoM.Game
 {
     public class WorldObject
     {
+        public IBehaviour Behaviour;
+
+        public ItemRequirements[] ItemRequirements;
         public string ObjectName;
+
+        public Action<WorldObject> OnChange;
+        public IRenderer Renderer;
 
         protected WorldObject()
         {
         }
 
-        public Action<WorldObject> OnChange;
         public Tile Tile { get; private set; }
         public ObjectType ObjectType { get; private set; }
 
-        public bool HollowPlacement { get; set; } = true;
-        public bool MergesWithNeighbors { get; set; } = true;
+        // TODO We can move all this data in to a new class (WorldObjectSettings?)
+        public bool HollowPlacement { get; set; }
+        public bool MergesWithNeighbors { get; set; }
         public bool DragBuild { get; set; }
         public bool Encloses { get; set; }
         public float MovementCost { get; set; }
         public bool CanRotate { get; set; }
+        public bool StoresItems { get; set; }
+        public bool DestroyOnPlace { get; set; }
 
         public bool IsPassable => Behaviour == null || Behaviour.IsPassable();
         public Texture2D Image { get; set; }
-        
-
-        public IBehaviour Behaviour;
-        public IRenderer Renderer;
 
         public WorldObject Place(Tile tile)
         {
@@ -45,7 +49,10 @@ namespace LoM.Game
                 Encloses = Encloses,
                 CanRotate = CanRotate,
                 MovementCost = MovementCost,
-                Renderer = Renderer?.Clone()
+                Renderer = Renderer?.Clone(),
+                ItemRequirements = ItemRequirements,
+                DestroyOnPlace = DestroyOnPlace,
+                StoresItems = StoresItems
             };
 
             clonedCopy.Behaviour = Behaviour?.Clone(clonedCopy.Renderer);
@@ -57,7 +64,7 @@ namespace LoM.Game
         public static WorldObject CreatePrototype(string objectName, bool hollowPlacement, bool mergeWithNeighbors,
             bool dragBuild,
             bool encloses,
-            float movementCost, bool canRotate, IBehaviour behaviour, IRenderer renderer)
+            float movementCost, bool canRotate, bool destroyOnPlace, bool storesItems, IBehaviour behaviour, IRenderer renderer)
         {
             return new WorldObject
             {
@@ -68,6 +75,8 @@ namespace LoM.Game
                 DragBuild = dragBuild,
                 Encloses = encloses,
                 CanRotate = canRotate,
+                DestroyOnPlace = destroyOnPlace,
+                StoresItems = storesItems,
                 Behaviour = behaviour,
                 Renderer = renderer
             };
@@ -83,6 +92,5 @@ namespace LoM.Game
         {
             Renderer?.Draw(spriteBatch, this);
         }
-
     }
 }
