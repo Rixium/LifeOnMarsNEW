@@ -1,4 +1,5 @@
-﻿using LoM.Constants;
+﻿using System.Threading;
+using LoM.Constants;
 using LoM.Game;
 using LoM.Managers;
 using LoM.Util;
@@ -23,6 +24,8 @@ namespace LoM
                 PreferredBackBufferWidth = Screen.Width,
                 PreferredBackBufferHeight = Screen.Height
             };
+            
+            _graphics.ApplyChanges();
 
             Content.RootDirectory = "Content";
         }
@@ -30,7 +33,7 @@ namespace LoM
         protected override void Initialize()
         {
             Window.Title = "Life on Mars";
-            IsMouseVisible = true;
+            IsMouseVisible = false;
             base.Initialize();
         }
 
@@ -63,7 +66,7 @@ namespace LoM
         protected override void UnloadContent()
         {
         }
-
+        
         protected override void Update(GameTime gameTime)
         {
             var deltaTime = (float) gameTime.ElapsedGameTime.TotalSeconds;

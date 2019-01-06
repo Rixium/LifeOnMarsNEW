@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using LoM.Game.Items;
 using LoM.Game.Jobs;
 using LoM.Serialization;
 
@@ -16,6 +17,9 @@ namespace LoM.Managers
 {
     public class GameManager
     {
+
+        private FrameCounter _frameCounter = new FrameCounter();
+
         private const int MapHeight = 50;
         private const int MapWidth = 50;
         private const int TileSize = 32;
@@ -85,12 +89,16 @@ namespace LoM.Managers
         {
             foreach (var tile in World.Tiles)
             {
-                if(tile.WorldObject != null)
+                if (tile.WorldObject != null)
+                {
                     RegionManager.OnJobComplete(new Job
                     {
                         JobType = JobType.WorldObject,
                         Tile = tile
                     });
+
+                    OnWorldObjectPlaced(tile.WorldObject);
+                }
             }
             
         }
@@ -123,10 +131,35 @@ namespace LoM.Managers
             JobManager.OnJobComplete += RegionManager.OnJobComplete;
             World.OnTileChanged += JobManager.OnTileChanged;
             World.OnJobRequest += JobManager.OnJobRequest;
+            World.OnWorldObjectPlaced += OnWorldObjectPlaced;
+
+
+            InputManager.OnMouseMoved += UIManager.OnMouseMoved;
 
             SetupCamera();
 
             SoundManager.PlayMainTrack();
+            
+            DropItemAt(World.GetTileAt(MapWidth / 2 + 5, MapHeight / 2 + 10), "IronPlate", 10);
+        }
+
+        private void DropItemAt(Tile tile, string itemType, int amount)
+        {
+            if (ContentChest.ItemData.ContainsKey(itemType) == false) return;
+
+            var itemData = ContentChest.ItemData[itemType];
+            var item = new Item
+            {
+                Type = itemData.Type
+            };
+
+            var itemStack = new ItemStack(item)
+            {
+                MaxStack = itemData.MaxStackSize,
+                Amount = MathHelper.Clamp(amount, 0, itemData.MaxStackSize)
+            };
+
+            tile.DropItem(itemStack);
         }
 
         public Rectangle GetBoundsOfCharacter(Character character)
@@ -188,6 +221,29 @@ namespace LoM.Managers
                 character.InvalidatePath();
             }
         }
+
+        private void OnWorldObjectPlaced(WorldObject worldObject)
+        {
+            var tile = worldObject?.Tile;
+            if (tile == null) return;
+            
+            tile.WorldObject.OnChange += OnWorldObjectChange;
+
+            var northTile = tile.North();
+            var southTile = tile.South();
+
+            if (southTile?.WorldObject == null || northTile?.WorldObject == null) return;
+            if (southTile.WorldObject.Encloses == false || northTile.WorldObject.Encloses == false) return;
+
+            tile.WorldObject.Renderer.Rotated = true;
+
+        }
+
+        private void OnWorldObjectChange(WorldObject worldObject)
+        {
+            ContentChest.DoorSound.Play();
+        }
+
 
         private void SetupCamera()
         {
@@ -253,7 +309,12 @@ namespace LoM.Managers
             _tileYStartDrag = tile.Y;
         }
 
-        private Tile GetTileAtMouse(float mouseX, float mouseY)
+        public Tile GetTileAtMouse(Vector2 position)
+        {
+            return GetTileAtMouse(position.X, position.Y);
+        }
+
+        public Tile GetTileAtMouse(float mouseX, float mouseY)
         {
             var worldPosition = Camera.ScreenToWorld(new Vector2(mouseX, mouseY));
             mouseX = worldPosition.X;
@@ -343,10 +404,13 @@ namespace LoM.Managers
             for (var y = yStart; y <= yEnd; y++)
             {
                 // TODO CHECK THE OBJECT TYPE FOR THIS. We might want only walls to be "hollow placed", for rooms.
-                
 
                 if (BuildManager.BuildMode == BuildMode.WorldObject)
-                    if(x != xStart && x != xEnd && y != yStart && y != yEnd) continue;
+                {
+                    var buildItem = WorldObjectChest.WorldObjectPrototypes[BuildManager.BuildObject];
+                    if (buildItem.HollowPlacement && x != xStart && x != xEnd && y != yStart && y != yEnd) continue;
+                }
+                
                 var tile = World.GetTileAt(x, y);
 
                 if (_buildTiles.Count == 0 && tile.WorldObject != null && BuildManager.BuildMode == BuildMode.Destroy)
@@ -367,6 +431,7 @@ namespace LoM.Managers
 
         public void Update(float deltaTime)
         {
+            _frameCounter.Update(deltaTime);
             InputManager.Update(deltaTime);
 
             if (_paused) return;
@@ -382,6 +447,7 @@ namespace LoM.Managers
         private void DrawWorld(SpriteBatch spriteBatch)
         {
             var objects = new Queue<Tile>();
+            var items = new Queue<Tile>();
 
             var renderStartX = (Camera.X - Screen.Height) / TileSize - 1;
             var renderStartY = (Camera.Y - Screen.Width) / TileSize - 1;
@@ -414,12 +480,24 @@ namespace LoM.Managers
 
                 if (tile.WorldObject != null)
                     objects.Enqueue(tile);
+
+                if (tile.ItemStack != null)
+                    items.Enqueue(tile);
             }
 
             while (objects.Count > 0)
             {
                 var worldObject = objects.Dequeue().WorldObject;
                 worldObject.Draw(spriteBatch);
+            }
+
+            while (items.Count > 0)
+            {
+                var tile = items.Dequeue();
+                var item = tile.ItemStack;
+                var itemData = ContentChest.ItemData[item.Item.Type];
+
+                spriteBatch.Draw(ContentChest.Items[itemData.Type], new Vector2(tile.X * TileSize, tile.Y * TileSize), Color.White);
             }
 
             if (_buildTiles != null)
@@ -542,6 +620,11 @@ namespace LoM.Managers
         private void DrawUI(SpriteBatch spriteBatch)
         {
             UIManager.Draw(spriteBatch);
+
+            var frameString = $"Frames: {_frameCounter.AverageFramesPerSecond }";
+            spriteBatch.Begin();
+            spriteBatch.DrawString(ContentChest.MainFont, frameString, new Vector2(10, Screen.Height - ContentChest.MainFont.MeasureString(frameString).Y - 100 - 10), Color.White);
+            spriteBatch.End();
         }
 
         public void Pause(bool paused)

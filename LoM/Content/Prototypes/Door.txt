@@ -1,0 +1,36 @@
+{
+	"Name":"Door",
+	"HollowPlacement":false,
+	"MergeWithNeighbors":false,
+	"DragBuild":false,
+	"CanRotate":true,
+	"Encloses":true,
+	"MovementCost":1,
+	"Renderer": {
+		"Name":"TransitionRenderer",
+		"Textures": [
+			"Door",
+			"Door_1",
+			"Door_2",
+			"Door_3",
+			"Door_4",
+			"Door_5",
+			"Door_6"
+		],
+		"Parameters": [
+			{
+				"Name":"TransitionTime",
+				"Value":0.5
+			}
+		]
+	},
+	"Behaviour": {
+		"Name":"DoorBehaviour",
+		"Parameters":[
+			{ 
+				"Name":"OpeningTime",
+				"Value":0.5
+			}
+		]
+	}
+}

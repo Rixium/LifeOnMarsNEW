@@ -84,7 +84,10 @@ namespace LoM
                 var font = _contentChest.MainFont;
                 spriteBatch.DrawString(font, _saves[i].Split('.')[0], new Vector2(10, 10 + (i * 10) + (i * font.MeasureString(_saves[i].Split('.')[0]).Y)), Color.White);
             }
-            
+
+            var mousePos = _inputManager.GetMousePosition();
+            spriteBatch.Draw(_contentChest.Cursor, mousePos, Color.White);
+
             spriteBatch.End();
         }
 

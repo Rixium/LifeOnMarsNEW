@@ -28,6 +28,7 @@ namespace LoM.Managers
         public Action MouseReleased;
         public Action<Keys> OnKeyPressed;
         public Action RightClick;
+        public Action<Vector2> OnMouseMoved;
 
         public void RegisterOnKeyDown(Keys key, Action<Keys> controlAction)
         {
@@ -94,6 +95,10 @@ namespace LoM.Managers
                 OnMouseRightDown(deltaTime);
             else if (_lastMouseState.RightButton == ButtonState.Pressed)
                 OnMouseRightReleased(deltaTime);
+
+            if(Vector2.Distance(_lastMouseState.Position.ToVector2(), _currentMouseState.Position.ToVector2()) > 1)
+                OnMouseMoved?.Invoke(_currentMouseState.Position.ToVector2());
+
         }
 
         private void OnMouseRightReleased(float deltaTime)
@@ -179,5 +184,11 @@ namespace LoM.Managers
             public Action<Keys> OnKeyPress;
             public Action<Keys> OnKeyUp;
         }
+
+        public Vector2 GetMousePosition()
+        {
+            return _currentMouseState.Position.ToVector2();
+        }
+
     }
 }

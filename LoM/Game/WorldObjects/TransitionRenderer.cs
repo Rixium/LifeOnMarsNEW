@@ -7,9 +7,9 @@ namespace LoM.Game.WorldObjects
     public class TransitionRenderer : IRenderer
     {
         public ContentChest ContentChest;
-
-
-        private int _lastState;
+        
+        public bool Rotated { get; set; }
+        private float _lastState;
         public int CurrentTransition;
         public float CurrentTransitionTime;
 
@@ -39,10 +39,18 @@ namespace LoM.Game.WorldObjects
             }
         }
 
+
+
         public void Draw(SpriteBatch spriteBatch, WorldObject owner)
         {
             var img = ContentChest.WorldObjects[TransitionTextures[CurrentTransition]];
-            spriteBatch.Draw(img, new Vector2(owner.Tile.X * 32, owner.Tile.Y * 32), Color.White);
+            if (owner.CanRotate && Rotated)
+                img = ContentChest.WorldObjects[TransitionTextures[CurrentTransition] + "_R"];
+
+            var renderY = (owner.Tile.Y * 32) - (img.Height - 32);
+            var renderX = owner.Tile.X * 32;
+
+            spriteBatch.Draw(img, new Vector2(renderX, renderY), Color.White);
         }
 
         public void Update(float deltaTime)
@@ -61,14 +69,16 @@ namespace LoM.Game.WorldObjects
             };
         }
 
-        public void OnStateChange(int newState)
+        public void OnStateChange(float newState)
         {
             if (CurrentTransitionTime < PerTransitionTime) return;
+            if (newState == _lastState) return;
             CurrentTransitionTime = 0;
 
             if (newState > _lastState)
                 CurrentTransition++;
-            else CurrentTransition--;
+            else if(newState < _lastState)
+                CurrentTransition--;
 
             _lastState = newState;
             CurrentTransition = MathHelper.Clamp(CurrentTransition, 0, MaxTransition);

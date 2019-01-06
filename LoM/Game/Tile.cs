@@ -1,4 +1,5 @@
 ﻿using System;
+using LoM.Game.Items;
 
 namespace LoM.Game
 {
@@ -19,9 +20,11 @@ namespace LoM.Game
             Type = TileType.None;
         }
 
+        public ItemStack ItemStack;
         public TileType Type { get; private set; }
         public WorldObject WorldObject { get; private set; }
         public World World { get; set; }
+        
 
         public float MovementCost
         {
@@ -87,5 +90,15 @@ namespace LoM.Game
         {
             return World.GetTileAt(X - 1, Y);
         }
+
+        public ItemStack DropItem(ItemStack stack)
+        {
+            if (ItemStack != null)
+                return ItemStack.MergeWith(stack);
+
+            ItemStack = stack;
+            return null;
+        } 
+
     }
 }

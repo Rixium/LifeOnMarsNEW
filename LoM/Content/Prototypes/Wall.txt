@@ -1,0 +1,11 @@
+{
+	"Name":"Wall",
+	"HollowPlacement":true,
+	"MergeWithNeighbors":true,
+	"DragBuild":true,
+	"Encloses":true,
+	"MovementCost":0,
+	"Renderer": {
+		"Name":"StaticRenderer"
+	}
+}

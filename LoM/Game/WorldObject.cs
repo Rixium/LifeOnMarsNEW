@@ -1,4 +1,5 @@
-﻿using LoM.Constants;
+﻿using System;
+using LoM.Constants;
 using LoM.Game.WorldObjects;
 using LoM.Util;
 using Microsoft.Xna.Framework.Graphics;
@@ -13,6 +14,7 @@ namespace LoM.Game
         {
         }
 
+        public Action<WorldObject> OnChange;
         public Tile Tile { get; private set; }
         public ObjectType ObjectType { get; private set; }
 
@@ -21,12 +23,14 @@ namespace LoM.Game
         public bool DragBuild { get; set; }
         public bool Encloses { get; set; }
         public float MovementCost { get; set; }
+        public bool CanRotate { get; set; }
 
         public bool IsPassable => Behaviour == null || Behaviour.IsPassable();
         public Texture2D Image { get; set; }
+        
 
         public IBehaviour Behaviour;
-        private IRenderer _renderer;
+        public IRenderer Renderer;
 
         public WorldObject Place(Tile tile)
         {
@@ -39,11 +43,12 @@ namespace LoM.Game
                 MergesWithNeighbors = MergesWithNeighbors,
                 DragBuild = DragBuild,
                 Encloses = Encloses,
+                CanRotate = CanRotate,
                 MovementCost = MovementCost,
-                _renderer = _renderer?.Clone()
+                Renderer = Renderer?.Clone()
             };
 
-            clonedCopy.Behaviour = Behaviour?.Clone(clonedCopy._renderer);
+            clonedCopy.Behaviour = Behaviour?.Clone(clonedCopy.Renderer);
             clonedCopy.Behaviour?.SetOwner(clonedCopy);
 
             return clonedCopy;
@@ -52,7 +57,7 @@ namespace LoM.Game
         public static WorldObject CreatePrototype(string objectName, bool hollowPlacement, bool mergeWithNeighbors,
             bool dragBuild,
             bool encloses,
-            float movementCost, IBehaviour behaviour, IRenderer renderer)
+            float movementCost, bool canRotate, IBehaviour behaviour, IRenderer renderer)
         {
             return new WorldObject
             {
@@ -62,20 +67,21 @@ namespace LoM.Game
                 MovementCost = movementCost,
                 DragBuild = dragBuild,
                 Encloses = encloses,
+                CanRotate = canRotate,
                 Behaviour = behaviour,
-                _renderer = renderer
+                Renderer = renderer
             };
         }
 
         public void Update(float deltaTime)
         {
-            _renderer?.Update(deltaTime);
+            Renderer?.Update(deltaTime);
             Behaviour?.Update(deltaTime);
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            _renderer?.Draw(spriteBatch, this);
+            Renderer?.Draw(spriteBatch, this);
         }
 
     }

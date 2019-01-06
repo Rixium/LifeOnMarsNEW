@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using LoM.Constants;
+using LoM.Game;
 using LoM.Game.Build;
 using LoM.UI;
 using LoM.Util;
@@ -20,6 +21,8 @@ namespace LoM.Managers
         private readonly SoundManager _soundManager;
 
         public List<UIElement> UIElements = new List<UIElement>();
+
+        private Tile _mouseOverTile;
 
 
         public UIManager(GameManager gameManager, InputManager inputManager, BuildManager buildManager, SoundManager soundManager)
@@ -79,6 +82,18 @@ namespace LoM.Managers
 
             button = new Button(10, button.Y + button.GetBounds().Height + 10, buttonSettings);
             _inputManager.RegisterUIElement(() => { _buildManager.SetBuildObject("Door"); }, button);
+            button.OnClick += _soundManager.OnButtonClick;
+            UIElements.Add(button);
+
+
+            buttonSettings = new ElementSettings()
+            {
+                ImagePressed = _gameManager.ContentChest.DoorButtonPressed,
+                ImageOff = _gameManager.ContentChest.DoorButtonOff
+            };
+
+            button = new Button(10, button.Y + button.GetBounds().Height + 10, buttonSettings);
+            _inputManager.RegisterUIElement(() => { _buildManager.SetBuildObject("Stockpile"); }, button);
             button.OnClick += _soundManager.OnButtonClick;
             UIElements.Add(button);
 
@@ -153,8 +168,31 @@ namespace LoM.Managers
                     Color.White);
             }
 
+            var mousePos = _inputManager.GetMousePosition();
+
+            if (_mouseOverTile != null &&
+                _mouseOverTile.ItemStack != null)
+            {
+                var itemData = ContentChest.ItemData[_mouseOverTile.ItemStack.Item.Type];
+                var str = $"{itemData.Name} x{_mouseOverTile.ItemStack.Amount}";
+                var strWidth = (int) ContentChest.MainFont.MeasureString(str).X;
+                var strHeight = (int) ContentChest.MainFont.MeasureString(str).Y;
+
+                spriteBatch.Draw(ContentChest.Pixel,
+                    new Rectangle((int) mousePos.X + 10, (int) mousePos.Y + 10, 20 + strWidth, 20 + strHeight),
+                    Color.White);
+                spriteBatch.DrawString(ContentChest.MainFont, str, new Vector2(mousePos.X + 20, mousePos.Y + 20),
+                    Color.Black);
+            }
+
+            spriteBatch.Draw(ContentChest.Cursor, mousePos, Color.White);
+
             spriteBatch.End();
         }
 
+        public void OnMouseMoved(Vector2 mousePosition)
+        {
+            _mouseOverTile = _gameManager.GetTileAtMouse(mousePosition);
+        }
     }
 }

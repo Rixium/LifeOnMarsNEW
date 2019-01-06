@@ -6,7 +6,7 @@ namespace LoM.Util
     public class CameraController
     {
         private const float ZoomSpeed = 0.02f;
-        private const int CameraSpeed = 5;
+        private int CameraSpeed = 5;
 
         private readonly Camera _camera;
 

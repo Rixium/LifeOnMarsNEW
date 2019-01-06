@@ -8,6 +8,8 @@ namespace LoM.Game.WorldObjects
     {
         public ContentChest ContentChest;
 
+        public bool Rotated { get; set; }
+
         public void Draw(SpriteBatch spriteBatch, WorldObject owner)
         {
             var objectType = owner.ObjectName;
@@ -19,6 +21,9 @@ namespace LoM.Game.WorldObjects
                 if (!string.IsNullOrWhiteSpace(neighborString))
                     name = $"{objectType}_{neighborString}";
             }
+
+            if (ContentChest.WorldObjects.ContainsKey(name) == false)
+                return;
 
             // TODO THIS TILE SIZE.
             spriteBatch.Draw(ContentChest.WorldObjects[name], new Vector2(owner.Tile.X * 32, owner.Tile.Y * 32),

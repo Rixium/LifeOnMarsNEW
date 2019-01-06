@@ -5,9 +5,10 @@ namespace LoM.Game.WorldObjects
 {
     public class DoorBehaviour : IBehaviour
     {
-        public Action<int> OnStateChange;
+        public Action<float> OnStateChange;
 
         public float OpeningTime = 0.3f;
+        private bool _startedOpening;
 
         public float OpenPercentage;
         public WorldObject Owner;
@@ -15,17 +16,18 @@ namespace LoM.Game.WorldObjects
 
         public bool IsPassable()
         {
-            return OpenPercentage >= 1.0f;
+            return OpenPercentage >= 100;
         }
 
         public void Update(float deltaTime)
         {
-            var changeAmount = deltaTime / OpeningTime;
+            var changeAmount = deltaTime / OpeningTime * 100;
             
             var characterNear = false;
             foreach (var c in World.Characters)
             {
-                if (Owner.Tile != c.TargetTile)
+                if (Owner.Tile != c.TargetTile &&
+                    Owner.Tile != c.Tile)
                     continue;
 
                 OpenPercentage += changeAmount;
@@ -37,18 +39,25 @@ namespace LoM.Game.WorldObjects
             if (!characterNear)
                 OpenPercentage -= changeAmount;
 
+            OpenPercentage = MathHelper.Clamp(OpenPercentage, 0, 100);
 
-            OpenPercentage = MathHelper.Clamp(OpenPercentage, 0, 1);
+            if (OpenPercentage <= 0)
+                _startedOpening = false;
+            else if (OpenPercentage != 0 && !_startedOpening)
+            {
+                _startedOpening = true;
+                Owner.OnChange?.Invoke(Owner);
+            }
 
-            
-            OnStateChange?.Invoke((int) (OpenPercentage * 100));
+            OnStateChange?.Invoke(OpenPercentage);
         }
 
         public IBehaviour Clone(IRenderer renderer)
         {
             var cloned = new DoorBehaviour
             {
-                OnStateChange = ((TransitionRenderer) renderer).OnStateChange
+                OnStateChange = ((TransitionRenderer) renderer).OnStateChange,
+                OpeningTime = OpeningTime
             };
 
             return cloned;

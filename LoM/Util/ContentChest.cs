@@ -1,122 +1,176 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using LoM.Constants;
 using LoM.Game;
+using LoM.Serialization.Data;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
+using Newtonsoft.Json;
 
 namespace LoM.Util
 {
     public class ContentChest
     {
-        private ContentManager _content;
 
-        public SpriteFont MainFont;
+        public Texture2D Cursor;
 
-        public Texture2D Reticle;
-        public Texture2D HoverSquare;
-        public Texture2D Pixel;
-        public Texture2D GridSquare;
-
-        public Texture2D Pause;
-        public Texture2D Play;
-
-        public SoundEffect BuildSound;
-        public SoundEffect SuccessSound;
-        public Song MainMusic;
-
-        public Dictionary<TileType, Texture2D> TileTextures = new Dictionary<TileType, Texture2D>();
-        public Dictionary<string, Texture2D> WorldObjects = new Dictionary<string, Texture2D>();
-        public Dictionary<string, Texture2D> CharacterTypes = new Dictionary<string, Texture2D>();
-
-        public Texture2D BuildButtonPressed;
         public Texture2D BuildButtonOff;
 
-        public Texture2D DestroyButtonPressed;
+        public Texture2D BuildButtonPressed;
+
+        public SoundEffect BuildSound;
+
+        public Dictionary<string, ItemData> ItemData = new Dictionary<string, ItemData>();
+
+        public Dictionary<string, Texture2D> CharacterTypes = new Dictionary<string, Texture2D>();
+        public ContentManager Content;
         public Texture2D DestroyButtonOff;
 
-        public Texture2D WallButtonPressed;
-        public Texture2D WallButtonOff;
-
-        public Texture2D LoadGameButtonPressed;
-        public Texture2D LoadGameButtonOff;
-
-        public Texture2D SaveGameButtonPressed;
-        public Texture2D SaveGameButtonOff;
-
-        public Texture2D NewGameButtonPressed;
-        public Texture2D NewGameButtonOff;
-
-        public Texture2D DoorButtonPressed;
+        public Texture2D DestroyButtonPressed;
         public Texture2D DoorButtonOff;
 
+        public Texture2D DoorButtonPressed;
+        public Texture2D GridSquare;
+
         public Texture2D Helmet;
+        public Texture2D HoverSquare;
+        public Texture2D LoadGameButtonOff;
+
+        public Texture2D LoadGameButtonPressed;
+
+        public SpriteFont MainFont;
+        public Song MainMusic;
+        public SoundEffect Ambient;
+        public Texture2D NewGameButtonOff;
+
+        public Texture2D NewGameButtonPressed;
+
+        public Texture2D Pause;
+        public Texture2D Pixel;
+        public Texture2D Play;
+
+        public Texture2D Reticle;
+        public Texture2D SaveGameButtonOff;
+
+        public Texture2D SaveGameButtonPressed;
+        public SoundEffect SuccessSound;
+
+        public Dictionary<TileType, Texture2D> TileTextures = new Dictionary<TileType, Texture2D>();
+        public Texture2D WallButtonOff;
+
+        public Texture2D WallButtonPressed;
+        public Dictionary<string, Texture2D> WorldObjects = new Dictionary<string, Texture2D>();
+        public Dictionary<string, Texture2D> Items = new Dictionary<string, Texture2D>();
 
         public ContentChest(ContentManager content)
         {
-            _content = content;
+            Content = content;
         }
+
+        public SoundEffect DoorSound;
 
         public void Load()
         {
-            TileTextures.Add(TileType.Ground, _content.Load<Texture2D>("Tile/ground"));
-            TileTextures.Add(TileType.None, _content.Load<Texture2D>("Tile/none"));
+            LoadItemData();
 
-            var di = new DirectoryInfo(_content.RootDirectory + "/Objects");
+            TileTextures.Add(TileType.Ground, Content.Load<Texture2D>("Tile/ground"));
+            TileTextures.Add(TileType.None, Content.Load<Texture2D>("Tile/none"));
+
+            var di = new DirectoryInfo(Content.RootDirectory + "/Objects");
             var files = di.GetFiles("*.xnb");
 
             // Load in our objects from the correct folder and bind them to the dictionary.
             foreach (var file in files)
             {
                 var fileName = file.Name.Split('.')[0];
-                WorldObjects.Add(fileName, _content.Load<Texture2D>($"Objects/{fileName}"));
+                WorldObjects.Add(fileName, Content.Load<Texture2D>($"Objects/{fileName}"));
             }
 
-            di = new DirectoryInfo(_content.RootDirectory + "/Characters");
+            di = new DirectoryInfo(Content.RootDirectory + "/Characters");
             files = di.GetFiles("*.xnb");
 
             // Load in our objects from the correct folder and bind them to the dictionary.
             foreach (var file in files)
             {
                 var fileName = file.Name.Split('.')[0];
-                CharacterTypes.Add(fileName, _content.Load<Texture2D>($"Characters/{fileName}"));
+                CharacterTypes.Add(fileName, Content.Load<Texture2D>($"Characters/{fileName}"));
             }
 
-            Pixel = _content.Load<Texture2D>("pixel");
-            Reticle = _content.Load<Texture2D>("UI/reticle");
-            HoverSquare = _content.Load<Texture2D>("UI/hover");
-            GridSquare = _content.Load<Texture2D>("UI/grid");
+            di = new DirectoryInfo(Content.RootDirectory + "/Items");
+            files = di.GetFiles("*.xnb");
 
-            BuildSound = _content.Load<SoundEffect>("Sounds/build");
-            SuccessSound = _content.Load<SoundEffect>("Sounds/success");
+            // Load in our objects from the correct folder and bind them to the dictionary.
+            foreach (var file in files)
+            {
+                var fileName = file.Name.Split('.')[0];
+                Items.Add(fileName, Content.Load<Texture2D>($"Items/{fileName}"));
+            }
 
-            MainMusic = _content.Load<Song>("Music/music");
+            Pixel = Content.Load<Texture2D>("pixel");
+            Reticle = Content.Load<Texture2D>("UI/reticle");
+            HoverSquare = Content.Load<Texture2D>("UI/hover");
+            GridSquare = Content.Load<Texture2D>("UI/grid");
 
-            MainFont = _content.Load<SpriteFont>("Fonts/gameFont");
+            BuildSound = Content.Load<SoundEffect>("Sounds/build");
+            SuccessSound = Content.Load<SoundEffect>("Sounds/success");
+            DoorSound = Content.Load<SoundEffect>("Sounds/DoorSound");
 
-            BuildButtonOff = _content.Load<Texture2D>("UI/Buttons/buildButton_Off");
-            BuildButtonPressed = _content.Load<Texture2D>("UI/Buttons/buildButton_Pressed");
-            DestroyButtonOff = _content.Load<Texture2D>("UI/Buttons/destroyButton_Off");
-            DestroyButtonPressed = _content.Load<Texture2D>("UI/Buttons/destroyButton_Pressed");
-            WallButtonOff = _content.Load<Texture2D>("UI/Buttons/buildWall_Off");
-            WallButtonPressed = _content.Load<Texture2D>("UI/Buttons/buildWall_Pressed");
+            MainMusic = Content.Load<Song>("Music/music");
+            Ambient = Content.Load<SoundEffect>("Music/ambient");
 
-            NewGameButtonOff = _content.Load<Texture2D>("UI/Buttons/newGameButton");
-            NewGameButtonPressed = _content.Load<Texture2D>("UI/Buttons/newGameButton_Pressed");
-            SaveGameButtonOff = _content.Load<Texture2D>("UI/Buttons/saveGameButton");
-            SaveGameButtonPressed = _content.Load<Texture2D>("UI/Buttons/saveGameButton_Pressed");
-            LoadGameButtonOff = _content.Load<Texture2D>("UI/Buttons/loadGameButton");
-            LoadGameButtonPressed = _content.Load<Texture2D>("UI/Buttons/loadGameButton_Pressed");
-            DoorButtonOff = _content.Load<Texture2D>("UI/Buttons/doorButton");
-            DoorButtonPressed = _content.Load<Texture2D>("UI/Buttons/doorButton_Pressed");
+            MainFont = Content.Load<SpriteFont>("Fonts/gameFont");
 
-            Pause = _content.Load<Texture2D>("UI/Buttons/pause");
-            Play = _content.Load<Texture2D>("UI/Buttons/play");
+            BuildButtonOff = Content.Load<Texture2D>("UI/Buttons/buildButton_Off");
+            BuildButtonPressed = Content.Load<Texture2D>("UI/Buttons/buildButton_Pressed");
+            DestroyButtonOff = Content.Load<Texture2D>("UI/Buttons/destroyButton_Off");
+            DestroyButtonPressed = Content.Load<Texture2D>("UI/Buttons/destroyButton_Pressed");
+            WallButtonOff = Content.Load<Texture2D>("UI/Buttons/buildWall_Off");
+            WallButtonPressed = Content.Load<Texture2D>("UI/Buttons/buildWall_Pressed");
 
-            Helmet = _content.Load<Texture2D>("Helmet");
+            NewGameButtonOff = Content.Load<Texture2D>("UI/Buttons/newGameButton");
+            NewGameButtonPressed = Content.Load<Texture2D>("UI/Buttons/newGameButton_Pressed");
+            SaveGameButtonOff = Content.Load<Texture2D>("UI/Buttons/saveGameButton");
+            SaveGameButtonPressed = Content.Load<Texture2D>("UI/Buttons/saveGameButton_Pressed");
+            LoadGameButtonOff = Content.Load<Texture2D>("UI/Buttons/loadGameButton");
+            LoadGameButtonPressed = Content.Load<Texture2D>("UI/Buttons/loadGameButton_Pressed");
+            DoorButtonOff = Content.Load<Texture2D>("UI/Buttons/doorButton");
+            DoorButtonPressed = Content.Load<Texture2D>("UI/Buttons/doorButton_Pressed");
+
+            Pause = Content.Load<Texture2D>("UI/Buttons/pause");
+            Play = Content.Load<Texture2D>("UI/Buttons/play");
+
+            Helmet = Content.Load<Texture2D>("Helmet");
+
+            Cursor = Content.Load<Texture2D>("Cursor/Normal");
         }
+
+        private void LoadItemData()
+        {
+            var itemDataDirectory = "Content\\Data\\Items";
+            var itemData = LoadFromFiles<List<ItemData>>(itemDataDirectory);
+
+            foreach (var dataList in itemData)
+            {
+                foreach (var item in dataList)
+                {
+                    ItemData.Add(item.Type, item);
+                }
+            }
+        }
+
+        private static IEnumerable<T> LoadFromFiles<T>(string directory)
+        {
+            if (Directory.Exists(directory) == false) return null;
+            var data = new List<T>();
+            foreach (var file in Directory.GetFiles(directory))
+            {
+                var lines = File.ReadAllText(file);
+                var worldObject = JsonConvert.DeserializeObject<T>(lines);
+                data.Add(worldObject);
+            }
+            return data.ToArray();
+        }
+
     }
 }

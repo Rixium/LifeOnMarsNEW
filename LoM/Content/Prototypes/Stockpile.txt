@@ -1,0 +1,11 @@
+﻿{
+	"Name":"Stockpile",
+	"HollowPlacement":false,
+	"MergeWithNeighbors":true,
+	"DragBuild":true,
+	"Encloses":false,
+	"MovementCost":1,
+	"Renderer": {
+		"Name":"StaticRenderer"
+	}
+}

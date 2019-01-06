@@ -9,7 +9,10 @@ namespace LoM.Game
     {
 
         public Func<Character, Job> OnJobRequest;
+
         public Action<Tile> OnTileChanged;
+        public Action<WorldObject> OnWorldObjectPlaced;
+
         public int Width { get; }
         public int Height { get; }
         public Tile[,] Tiles;
@@ -67,8 +70,11 @@ namespace LoM.Game
 
         public void PlaceWorldObject(Tile tile, WorldObject worldObject)
         {
-            if(tile.PlaceObject(worldObject))
+            if (tile.PlaceObject(worldObject))
+            {
+                OnWorldObjectPlaced?.Invoke(worldObject);
                 WorldObjects.Add(worldObject);
+            }
         }
 
     }

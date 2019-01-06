@@ -36,6 +36,7 @@ namespace LoM.Pathfinding
             }
 
             _openList.Enqueue(_startTile, 0);
+            _fScores[_startTile] = 0;
 
             do
             {
@@ -43,32 +44,25 @@ namespace LoM.Pathfinding
                 _closedList.Add(bestFScoreTile);
 
                 var neighbors = bestFScoreTile.GetNeighbors();
-
+                
                 if (bestFScoreTile == _endTile) return ConstructPath(includeLast);
 
                 foreach (var neighbor in neighbors)
                 {
                     if (neighbor == null) continue;
+                    if (neighbor.MovementCost == 0) continue;
                     if (_closedList.Contains(neighbor)) continue;
-                    if (!_openList.Contains(neighbor))
+
+                    int fScore = _fScores[bestFScoreTile] + Cost(bestFScoreTile, neighbor);
+                    
+                    if (!_openList.Contains(neighbor) || fScore < _fScores[neighbor])
                     {
-                        if (neighbor.MovementCost == 0 &&
-                            neighbor != _endTile) continue;
 
-                        var fScore = CalculateFScore(neighbor, bestFScoreTile);
-                        _fScores[neighbor] = fScore;
+                        _fScores[neighbor] =  fScore;
                         _cameFrom[neighbor] = bestFScoreTile;
-                        _openList.Enqueue(neighbor, -fScore);
-                        continue;
+                        var priority = (int)(fScore + Heuristic(neighbor, _endTile));
+                        _openList.Enqueue(neighbor, -priority);
                     }
-
-                    var currentFScore = _fScores[neighbor];
-                    var newFScore = CalculateFScore(bestFScoreTile, neighbor);
-
-                    if (newFScore > currentFScore) continue;
-
-                    _cameFrom[neighbor] = bestFScoreTile;
-                    _fScores[neighbor] = newFScore;
                 }
             } while (_openList.Count > 0);
 
@@ -120,17 +114,14 @@ namespace LoM.Pathfinding
             return stack;
         }
 
-        private int CalculateFScore(Tile child, Tile parent)
+        private int Cost(Tile child, Tile parent)
         {
-            var parentFScore = 0;
+            return (int) child.MovementCost;
+        }
 
-            if (_fScores.ContainsKey(parent))
-                parentFScore = _fScores[parent];
-
-            var distance = new Vector2(Math.Abs(_endTile.X - child.X), Math.Abs(_endTile.Y - child.Y));
-            var totalDistance = distance.X + distance.Y;
-            var fScore = parentFScore + totalDistance;
-            return (int) fScore;
+        private static float Heuristic(Tile a, Tile b)
+        {
+            return Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y);
         }
     }
 }

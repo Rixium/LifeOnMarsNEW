@@ -46,6 +46,8 @@
     <Compile Include="Game\Build\BuildManager.cs" />
     <Compile Include="Game\Build\BuildMode.cs" />
     <Compile Include="Game\Character.cs" />
+    <Compile Include="Game\Items\Item.cs" />
+    <Compile Include="Game\Items\ItemStack.cs" />
     <Compile Include="Game\Region.cs" />
     <Compile Include="Game\WorldObject.cs" />
     <Compile Include="Game\WorldObjectChest.cs" />
@@ -58,6 +60,9 @@
     <Compile Include="Managers\JobManager.cs" />
     <Compile Include="Managers\RegionManager.cs" />
     <Compile Include="Pathfinding\TilePath.cs" />
+    <Compile Include="Serialization\Data\BehaviourData.cs" />
+    <Compile Include="Serialization\Data\ItemData.cs" />
+    <Compile Include="Serialization\Data\Parameters.cs" />
     <Compile Include="Serialization\GameLoader.cs" />
     <Compile Include="Serialization\GameSaver.cs" />
     <Compile Include="Serialization\TileData.cs" />
@@ -83,7 +88,10 @@
     <Compile Include="UI\UIElement.cs" />
     <Compile Include="Managers\UIManager.cs" />
     <Compile Include="Game\World.cs" />
+    <Compile Include="Util\FrameCounter.cs" />
+    <Compile Include="Serialization\Data\RendererData.cs" />
     <Compile Include="Util\RenderHelper.cs" />
+    <Compile Include="Serialization\Data\WorldObjectData.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ConcurrentPriorityQueue, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -152,7 +160,20 @@
     <None Include="app.manifest" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Content\Data\Items\Items.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\Prototypes\Door.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\Prototypes\Stockpile.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\Prototypes\Wall.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

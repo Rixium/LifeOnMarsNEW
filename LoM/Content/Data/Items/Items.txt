@@ -1,0 +1,10 @@
+﻿[
+
+	{ 
+		"Name":"Iron Plate",
+		"Type":"IronPlate",
+		"Texture":"IronPlate",
+		"MaxStackSize":"5"
+	}
+
+]
