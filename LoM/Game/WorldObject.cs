@@ -50,15 +50,37 @@ namespace LoM.Game
                 CanRotate = CanRotate,
                 MovementCost = MovementCost,
                 Renderer = Renderer?.Clone(),
-                ItemRequirements = ItemRequirements,
                 DestroyOnPlace = DestroyOnPlace,
                 StoresItems = StoresItems
             };
+
+            if (ItemRequirements != null)
+            {
+                CreateItemRequirementCopy(clonedCopy);
+            }
 
             clonedCopy.Behaviour = Behaviour?.Clone(clonedCopy.Renderer);
             clonedCopy.Behaviour?.SetOwner(clonedCopy);
 
             return clonedCopy;
+        }
+
+        private void CreateItemRequirementCopy(WorldObject clonedCopy)
+        {
+            var newArray = new ItemRequirements[ItemRequirements.Length];
+            int curr = 0;
+            foreach (var item in ItemRequirements)
+            {
+                var newItem = new ItemRequirements
+                {
+                    Amount = item.Amount,
+                    Type = item.Type
+                };
+                newArray[curr++] = newItem;
+
+            }
+
+            clonedCopy.ItemRequirements = newArray;
         }
 
         public static WorldObject CreatePrototype(string objectName, bool hollowPlacement, bool mergeWithNeighbors,

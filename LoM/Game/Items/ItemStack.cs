@@ -4,6 +4,8 @@ namespace LoM.Game.Items
 {
     public class ItemStack
     {
+
+        public Tile Tile;
         public int Amount;
         public Item Item;
         public int MaxStack;

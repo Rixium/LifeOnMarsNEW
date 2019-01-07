@@ -1,24 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using LoM.Game.Items;
 using LoM.Game.Jobs;
-using LoM.Managers;
+using LoM.Serialization.Data;
 
 namespace LoM.Game
 {
     public class World
     {
+        public Func<ItemRequirements, Job> OnFetchJobRequest;
+        public Func<ItemRequirements, Tile> OnFindItemRequest;
 
         public Func<Character, Job> OnJobRequest;
 
         public Action<Tile> OnTileChanged;
+        public Action<ItemStack> OnItemStackChange;
         public Action<WorldObject> OnWorldObjectPlaced;
 
-        public int Width { get; }
-        public int Height { get; }
         public Tile[,] Tiles;
-
-        public List<Character> Characters { get; } = new List<Character>();
-        public List<WorldObject> WorldObjects { get; } = new List<WorldObject>();
 
         public World(int width, int height)
         {
@@ -29,13 +28,11 @@ namespace LoM.Game
 
             for (var x = 0; x < width; x++)
             for (var y = 0; y < height; y++)
-            {
                 Tiles[x, y] = new Tile(x, y, this)
                 {
                     OnTileChanged = TileChanged
                 };
-            }
-            
+
             Characters.Add(new Character(Tiles[width / 2, height / 2], "Dan"));
             Characters.Add(new Character(Tiles[width / 2 + 2, height / 2], "Tiffany"));
             Characters.Add(new Character(Tiles[width / 2 - 2, height / 2], "Mario"));
@@ -44,9 +41,15 @@ namespace LoM.Game
             Characters.Add(new Character(Tiles[width / 2, height / 2 - 2], "Grace"));
         }
 
+        public int Width { get; }
+        public int Height { get; }
+
+        public List<Character> Characters { get; } = new List<Character>();
+        public List<WorldObject> WorldObjects { get; } = new List<WorldObject>();
+
         public void Update(float deltaTime)
         {
-            foreach(var character in Characters)
+            foreach (var character in Characters)
                 character.Update(deltaTime);
             foreach (var worldObject in WorldObjects)
                 worldObject.Update(deltaTime);
@@ -75,6 +78,21 @@ namespace LoM.Game
                 OnWorldObjectPlaced?.Invoke(worldObject);
                 WorldObjects.Add(worldObject);
             }
+        }
+
+        public Job GetFetchJob(ItemRequirements itemsRequired)
+        {
+            return OnFetchJobRequest?.Invoke(itemsRequired);
+        }
+
+        public Tile FindItemTile(ItemRequirements requiredItem)
+        {
+            return OnFindItemRequest?.Invoke(requiredItem);
+        }
+
+        public void OnItemStackChanged(ItemStack itemStack)
+        {
+            OnItemStackChange?.Invoke(itemStack);
         }
 
     }

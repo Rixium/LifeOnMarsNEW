@@ -42,6 +42,7 @@ namespace LoM.Managers
         public InputManager InputManager;
         public JobManager JobManager;
         public RegionManager RegionManager;
+        public ItemManager ItemManager;
 
         public Action OnJobsComplete;
 
@@ -128,10 +129,17 @@ namespace LoM.Managers
             JobManager.OnJobsComplete += SoundManager.JobComplete;
             RegionManager = new RegionManager();
 
+            ItemManager = new ItemManager();
+
             JobManager.OnJobComplete += RegionManager.OnJobComplete;
             World.OnTileChanged += JobManager.OnTileChanged;
+
             World.OnJobRequest += JobManager.OnJobRequest;
+            World.OnFetchJobRequest += JobManager.OnFetchJobRequest;
+            World.OnFindItemRequest += ItemManager.FindItem;
+
             World.OnWorldObjectPlaced += OnWorldObjectPlaced;
+            World.OnItemStackChange += ItemManager.OnStackChange;
 
 
             InputManager.OnMouseMoved += UIManager.OnMouseMoved;
@@ -139,8 +147,10 @@ namespace LoM.Managers
             SetupCamera();
 
             SoundManager.PlayMainTrack();
-            
-            DropItemAt(World.GetTileAt(MapWidth / 2 + 5, MapHeight / 2 + 10), "IronPlate", 10);
+
+            DropItemAt(World.GetTileAt(MapWidth / 2 + 5, MapHeight / 2 + 10), "IronPlate", 1);
+            DropItemAt(World.GetTileAt(MapWidth / 2 + 10, MapHeight / 2 + 10), "IronPlate", 3);
+            DropItemAt(World.GetTileAt(MapWidth / 2 + 7, MapHeight / 2 + 12), "IronPlate", 2);
         }
 
         private void DropItemAt(Tile tile, string itemType, int amount)
@@ -156,10 +166,12 @@ namespace LoM.Managers
             var itemStack = new ItemStack(item)
             {
                 MaxStack = itemData.MaxStackSize,
-                Amount = MathHelper.Clamp(amount, 0, itemData.MaxStackSize)
+                Amount = MathHelper.Clamp(amount, 0, itemData.MaxStackSize),
+                Tile = tile
             };
 
             tile.DropItem(itemStack);
+            ItemManager.AddItems(tile.ItemStack);
         }
 
         public Rectangle GetBoundsOfCharacter(Character character)
@@ -616,6 +628,11 @@ namespace LoM.Managers
                 spriteBatch.Draw(ContentChest.Helmet, new Rectangle((int)drawX, (int)drawY, TileSize, TileSize), Color.White);
             }
 
+            if (character.CarriedItem != null)
+            {
+                var itemImage = ContentChest.Items[character.CarriedItem.Item.Type];
+                spriteBatch.Draw(itemImage, new Rectangle((int)drawX + 16, (int) drawY + 16, 16, 16), Color.White);
+            }
             /*var text = character.CharacterType;
             var textWidth = ContentChest.MainFont.MeasureString(text).X;
             spriteBatch.DrawString(ContentChest.MainFont, text, new Vector2(drawX + 16 - textWidth / 2, drawY - 10), Color.White);*/

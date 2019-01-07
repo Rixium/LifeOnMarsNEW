@@ -25,6 +25,8 @@ namespace LoM.Pathfinding
 
         public Stack<Tile> FindPath(bool includeLast)
         {
+            if (_startTile == null || _endTile == null) return null;
+
             if (_startTile.Region != _endTile.Region &&
                 !RegionTileNextTo(_startTile, _endTile)) return null;
 

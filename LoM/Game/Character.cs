@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using LoM.Game.Items;
 using LoM.Game.Jobs;
 using LoM.Pathfinding;
+using LoM.Serialization.Data;
 using Microsoft.Xna.Framework;
 
 namespace LoM.Game
@@ -9,15 +11,16 @@ namespace LoM.Game
     {
         private float _jobGetCoolDown;
         private Stack<Tile> _path;
-        private bool _pathfinding;
 
         private TilePath _tilePath;
+
+        public ItemStack CarriedItem;
 
         public string CharacterType;
 
         public float MovementPercentage;
 
-        public float Speed = 10f;
+        public float Speed = 5f;
 
         public Character(Tile tile, string characterType)
         {
@@ -30,21 +33,38 @@ namespace LoM.Game
         public Tile TargetTile { get; private set; }
 
         public Job CurrentJob { get; private set; }
+        public Stack<Job> JobStack { get; } = new Stack<Job>();
+
         public World World => Tile.World;
 
         public void Update(float deltaTime)
         {
             WalkToTarget(deltaTime);
 
-            if (CurrentJob == null && Tile == TargetTile) GetJob(deltaTime);
-            else DoJob(deltaTime);
+            switch (CurrentJob)
+            {
+                case null when Tile == TargetTile && JobStack.Count == 0:
+                    GetJob();
+                    break;
+                case null when Tile == TargetTile && JobStack.Count > 0:
+                    NextJob();
+                    break;
+                default:
+                    DoJob(deltaTime);
+                    break;
+            }
         }
 
-        /// <summary>
-        ///     If the character has a tile that isn't the target tile then they can progress towards the tile using movement
-        ///     percentage.
-        ///     Movement percentage can then be used later to calculate the position to render the character.
-        /// </summary>
+        private void NextJob()
+        {
+            var nextJob = JobStack.Pop();
+
+            if (nextJob.Cancelled) return;
+            CurrentJob = nextJob;
+
+            ValidateJob();
+        }
+        
         private void WalkToTarget(float deltaTime)
         {
             if (Tile == TargetTile)
@@ -53,8 +73,8 @@ namespace LoM.Game
                 GetNextTile();
                 return;
             }
-            
-            if(TargetTile.WorldObject != null)
+
+            if (TargetTile.WorldObject != null)
                 if (TargetTile.WorldObject.IsPassable == false)
                     return;
 
@@ -66,11 +86,7 @@ namespace LoM.Game
             Tile = TargetTile;
             GetNextTile();
         }
-
-        /// <summary>
-        ///     If the player has a path, and they're currently not moving, then they can get the next tile in the path
-        ///     ready to move there on the next update.
-        /// </summary>
+        
         private void GetNextTile()
         {
             if (_path == null) return;
@@ -79,13 +95,7 @@ namespace LoM.Game
             MovementPercentage = 0;
             TargetTile = _path.Pop();
         }
-
-        /// <summary>
-        ///     Invalidates the path that the character is currently following. This is usually called when the character is
-        ///     travelling to a job tile, and another tile has changed that means the
-        ///     characters path could be invalid. (Such as a wall being built, and the character can no longer traverse the wall
-        ///     tile, therefore needs to recalculate the path.
-        /// </summary>
+        
         public void InvalidatePath()
         {
             if (_path == null || _path.Count == 0) return;
@@ -97,49 +107,89 @@ namespace LoM.Game
             CurrentJob.Assignee = null;
             CurrentJob = null;
         }
-
-        /// <summary>
-        ///     If the character has a job, and they are at the job tile, then the character will do work on the job.
-        /// </summary>
+        
         private void DoJob(float deltaTime)
         {
             if (CurrentJob == null) return;
-            if (_path?.Count == 0) CurrentJob.DoWork(deltaTime);
-            if (CurrentJob?.JobTime >= CurrentJob?.RequiredJobTime &&
-                CurrentJob?.Tile == Tile) ClearJob();
+            if (_path?.Count != 0) return;
+
+            GiveJobHeldItems();
+            CurrentJob.DoWork(deltaTime);
         }
 
-        private void ClearJob()
+        private void GiveJobHeldItems()
         {
-            CurrentJob = null;
-            _path = null;
+            if (CarriedItem == null) return;
+            CurrentJob.AllocateItem(CarriedItem);
+            if (CarriedItem.Amount <= 0)
+                CarriedItem = null;
         }
-
-        /// <summary>
-        ///     The character will request a job from the world and try to get a path to the job.
-        ///     If the character cant find a path, then they will ignore the job.
-        /// </summary>
-        private void GetJob(float deltaTime)
+        
+        private void GetJob()
         {
-            if (_pathfinding) return;
-            _jobGetCoolDown -= deltaTime;
-
-            if (_jobGetCoolDown > 0) return;
             CurrentJob = World.GetJob(this);
             if (CurrentJob == null) return;
 
             CurrentJob.Assigned = true;
             CurrentJob.Assignee = this;
-            TargetTile = Tile;
 
-            _pathfinding = true;
+            ValidateJob();
+        }
+
+        private void ValidateJob()
+        {
+            if (FetchJobItems())
+                return;
+
+            TargetTile = Tile;
             FindPath();
+        }
+
+        private bool FetchJobItems()
+        {
+            var itemsRequired = CurrentJob.ItemsRequired();
+            return ShouldGetFetchJob(itemsRequired) && 
+                   GetFetchJob(itemsRequired);
+        }
+
+        private bool GetFetchJob(ItemRequirements itemsRequired)
+        {
+            var fetchJob = World.GetFetchJob(itemsRequired);
+
+            if (fetchJob == null)
+                return false;
+
+            StackCurrentJob();
+            fetchJob.Tile = World.FindItemTile(fetchJob.FetchItem);
+            fetchJob.OnJobComplete += OnFetchJobComplete;
+            JobStack.Push(fetchJob);
+            return true;
+        }
+
+        private bool ShouldGetFetchJob(ItemRequirements itemsRequired)
+        {
+            if (itemsRequired == null)
+                return false;
+            if (CarriedItem == null)
+                return true;
+            if (CarriedItem.Item.Type != itemsRequired.Type)
+                return true;
+
+            var carried = CarriedItem.Amount;
+            var totalRequired = itemsRequired.Amount;
+            return totalRequired - carried > 0;
+        }
+
+        private void StackCurrentJob()
+        {
+            JobStack.Push(CurrentJob);
+            CurrentJob = null;
         }
 
         private void FindPath()
         {
             _tilePath = new TilePath(Tile, CurrentJob.Tile);
-            var path = _tilePath.FindPath(CurrentJob.JobType == JobType.Move);
+            var path = _tilePath.FindPath(CurrentJob.StandOnTile);
 
             if (path != null)
             {
@@ -156,14 +206,8 @@ namespace LoM.Game
                 _jobGetCoolDown = 2.0f;
                 CurrentJob = null;
             }
-
-            _pathfinding = false;
         }
-
-        /// <summary>
-        ///     If the job that the character is currently assigned to is either completed or cancelled, then we set the job to
-        ///     null here, so the character can later request a new job.
-        /// </summary>
+        
         private void JobComplete(Job obj)
         {
             if (CurrentJob == obj) CurrentJob = null;
@@ -178,5 +222,40 @@ namespace LoM.Game
             FindPath();
         }
 
+        public void OnFetchJobComplete(Job job)
+        {
+            if (CarriedItem != null && job.FetchItem.Type != CarriedItem.Item.Type) return;
+
+            var requiredAmount = job.FetchItem.Amount;
+
+            if (CarriedItem != null)
+                requiredAmount -= CarriedItem.Amount;
+
+            if (job.Tile?.ItemStack == null)
+            {
+                CurrentJob = null;
+                TargetTile = Tile;
+                return;
+            }
+
+            var availableAmount = job.Tile.ItemStack.Amount;
+            var takeAmount = MathHelper.Min(requiredAmount, availableAmount);
+            job.Tile.ItemStack.Amount -= takeAmount;
+
+            if (job.FetchItem.Amount > 0) job.Requeue();
+
+            World.OnItemStackChanged(job.Tile.ItemStack);
+
+            if (CarriedItem == null)
+                CarriedItem = new ItemStack(new Item
+                {
+                    Type = job.FetchItem.Type
+                })
+                {
+                    Amount = takeAmount
+                };
+            else
+                CarriedItem.Amount += takeAmount;
+        }
     }
 }

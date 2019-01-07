@@ -4,7 +4,7 @@
 		"Name":"Iron Plate",
 		"Type":"IronPlate",
 		"Texture":"IronPlate",
-		"MaxStackSize":"5"
+		"MaxStackSize":"100"
 	}
 
 ]

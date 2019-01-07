@@ -6,6 +6,7 @@
         DestroyTile,
         WorldObject,
         DestroyWorldObject,
+        Fetch,
         Move
     }
 }

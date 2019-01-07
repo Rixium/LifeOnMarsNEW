@@ -57,6 +57,7 @@
     <Compile Include="Game\WorldObjects\TransitionRenderer.cs" />
     <Compile Include="Game\WorldObjects\StaticRenderer.cs" />
     <Compile Include="MainMenu.cs" />
+    <Compile Include="Managers\ItemManager.cs" />
     <Compile Include="Managers\JobManager.cs" />
     <Compile Include="Managers\RegionManager.cs" />
     <Compile Include="Pathfinding\TilePath.cs" />
