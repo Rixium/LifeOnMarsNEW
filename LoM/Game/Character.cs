@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using LoM.Game.Items;
 using LoM.Game.Jobs;
 using LoM.Pathfinding;
@@ -11,6 +12,9 @@ namespace LoM.Game
     {
 
         private Stack<Tile> _path;
+        private Random random = new Random();
+        public Vector2 CurrVector;
+        public Vector2 PathVector = Vector2.Zero;
 
         private TilePath _tilePath;
 
@@ -25,8 +29,11 @@ namespace LoM.Game
         public Character(Tile tile, string characterType)
         {
             Tile = tile;
-            TargetTile = Tile;
+            Tile.Character = this;
             CharacterType = characterType;
+            CurrVector = new Vector2(Tile.X * 32, Tile.Y * 32);
+            PathVector = new Vector2(Tile.X * 32, Tile.Y * 32);
+            _targetTile = Tile;
         }
 
         public Tile Tile { get; private set; }
@@ -40,6 +47,7 @@ namespace LoM.Game
                 if (_targetTile == value) return;
                 MovementPercentage = 0;
                 _targetTile = value;
+                SetVectors();
             }
         }
 
@@ -89,15 +97,36 @@ namespace LoM.Game
                 if (TargetTile.WorldObject.IsPassable == false)
                     return;
 
-            MovementPercentage += Speed * deltaTime;
+
+            var slowDownSpeed = 1f;
+
+            if (TargetTile.Character != null &&
+                TargetTile.Character != this)
+                slowDownSpeed = 0.2f;
+
+            // TODO Move percentage equipment
+            MovementPercentage += (Speed * slowDownSpeed / Tile.MovementCost) * deltaTime;
             MovementPercentage = MathHelper.Clamp(MovementPercentage, 0, 1);
 
             if (MovementPercentage < 1) return;
 
+            Tile.Character = null;
             Tile = TargetTile;
+            Tile.Character = this;
+
             GetNextTile();
         }
-        
+
+        static float NextFloat(Random random, int max, int min)
+        {
+            double range = (double)max - (double)min;
+            double sample = random.NextDouble();
+            double scaled = (sample * range) + min;
+            float f = (float)scaled;
+
+            return f;
+        }
+
         private void GetNextTile()
         {
             if (_path == null) return;
@@ -106,7 +135,28 @@ namespace LoM.Game
             MovementPercentage = 0;
             TargetTile = _path.Pop();
         }
-        
+
+        private void SetVectors()
+        {
+            CurrVector = new Vector2(PathVector.X, PathVector.Y);
+
+            if (random.Next(0, 50) < 30)
+            {
+                PathVector = new Vector2
+                {
+                    X = NextFloat(random, TargetTile.X * 32 - 12, TargetTile.X * 32 + 12),
+                    Y = NextFloat(random, TargetTile.Y * 32 - 12, TargetTile.Y * 32 + 12)
+                };
+                return;
+            }
+
+            PathVector = new Vector2
+            {
+                X = TargetTile.X * 32,
+                Y = TargetTile.Y * 32
+            };
+        }
+
         public void InvalidatePath()
         {
             if (_path == null || _path.Count == 0) return;
@@ -151,8 +201,9 @@ namespace LoM.Game
         private void ValidateJob()
         {
             TargetTile = Tile;
+
+            if (!FindPath()) return;
             FetchJobItems();
-            FindPath();
         }
 
         private void FetchJobItems()
@@ -168,6 +219,12 @@ namespace LoM.Game
 
             if (fetchJob == null)
                 return;
+
+            var requiredAmount = CarriedItem == null || CarriedItem.Item.Type != itemsRequired.Type ?
+                itemsRequired.Amount : itemsRequired.Amount - CarriedItem.Amount;
+
+            var allocationAmount = Math.Min(requiredAmount, fetchJob.Tile.ItemStack.Amount - fetchJob.Tile.ItemStack.TotalAllocated);
+            fetchJob.Tile.ItemStack.AddAllocation(allocationAmount);
             
             StackCurrentJob();
             
@@ -176,6 +233,27 @@ namespace LoM.Game
             fetchJob.Assignee = this;
 
             CurrentJob = fetchJob;
+
+            // Cannot get to items, but can get to the job. So need to remove access from both or will freeze character and job.
+            if (FindPath()) return;
+            JobStack.Push(fetchJob);
+            DestroyAllJobs();
+        }
+
+        private void DestroyAllJobs()
+        {
+            while (JobStack.Count > 0)
+            {
+                var oldJob = JobStack.Pop();
+                oldJob.Assigned = false;
+                oldJob.Assignee = null;
+                ClearJob();
+
+                if (oldJob.JobType != JobType.Fetch) continue;
+                oldJob.Tile.ItemStack.TotalAllocated = 0;
+                oldJob.Requeue();
+                ClearJob();
+            }
         }
 
         private bool ShouldGetFetchJob(ItemRequirements itemsRequired)
@@ -201,10 +279,10 @@ namespace LoM.Game
             CurrentJob = null;
         }
 
-        private void FindPath()
+        private bool FindPath()
         {
             _tilePath = new TilePath(Tile, CurrentJob.Tile);
-            var path = _tilePath.FindPath(CurrentJob.StandOnTile);
+            var path = _tilePath.FindPath(CurrentJob.StandOnTile || CurrentJob.JobType == JobType.Move);
 
             if (path != null)
             {
@@ -215,13 +293,11 @@ namespace LoM.Game
             else
             {
                 _path = null;
-                CurrentJob.OnJobComplete = null;
-                CurrentJob.OnJobCancelled = null;
-                CurrentJob.Assigned = false;
-                CurrentJob.Assignee = null;
-                TargetTile = Tile;
-                CurrentJob = null;
+                ClearJob();
+                return false;
             }
+
+            return true;
         }
         
         private void JobComplete(Job obj)
@@ -238,51 +314,71 @@ namespace LoM.Game
             CurrentJob = job;
             FindPath();
         }
-
+        
+        // Specific to fetch jobs. if one completes then the item assigned to the job will be given to character to carry.
         public void OnFetchJobComplete(Job job)
         {
-            // TODO REFACTOR THIS :)
-            if (CarriedItem != null && job.FetchItem.Type != CarriedItem.Item.Type) return;
+            if (CarriedItem != null 
+                && job.FetchItem.Type != CarriedItem.Item.Type ||
+                job.Tile?.ItemStack == null) return;
 
-            var requiredAmount = job.FetchItem.Amount;
+            var requiredAmount = CarriedItem == null ? 
+                job.FetchItem.Amount : job.FetchItem.Amount - CarriedItem.Amount;
+
+            ClearJob();
             
-            if (job.Tile?.ItemStack == null)
-            {
-                return;
-            }
+            var takeAmount = MathHelper.Min(requiredAmount, job.Tile.ItemStack.Amount);
+            
+            if (takeAmount < 0) takeAmount = 0;
 
-            if (CarriedItem != null)
-                requiredAmount -= CarriedItem.Amount;
+            PickupItem(job.Tile.ItemStack, takeAmount);
+
+            if (job.FetchItem.Amount - CarriedItem.Amount > 0)
+                job.Requeue();
+
+            if (takeAmount > 0)
+                World.OnItemStackChanged(job.Tile.ItemStack);
+        }
+
+        // Pass an item stack to the player and the amount given will be added to the player if possible.
+        private void PickupItem(ItemStack stack, int amount)
+        {
+            if (stack == null) return;
+            if (stack.Amount <= 0) return;
+            if (amount == 0) return;
+
+            var item = stack.Item;
+            if (item == null) return;
+
+            if (CarriedItem != null &&
+                CarriedItem.Item?.Type == item?.Type)
+                CarriedItem.Amount += amount;
+            else
+                CarriedItem = new ItemStack(item, amount);
+            
+            stack.Amount -= amount;
+            stack.TotalAllocated = 0;
+        }
+
+        // Removes all data from a job and un-assigns it.
+        private void ClearJob()
+        {
+            if (CurrentJob == null) return;
 
             CurrentJob.Assigned = false;
             CurrentJob.Assignee = null;
-            CurrentJob = null;
+
+            CurrentJob.OnJobCancelled -= JobComplete;
+            CurrentJob.OnJobComplete -= JobComplete;
+            CurrentJob.OnJobComplete -= OnFetchJobComplete;
+
+            if (CurrentJob.JobType == JobType.Fetch &&
+                CurrentJob?.Tile?.ItemStack != null)
+                CurrentJob.Tile.ItemStack.TotalAllocated = 0;
+
             TargetTile = Tile;
-
-            var availableAmount = job.Tile.ItemStack.Amount;
-            var takeAmount = MathHelper.Min(requiredAmount, availableAmount);
-
-            if (takeAmount <= 0) return;
-            
-            job.Tile.ItemStack.Amount -= takeAmount;
-            job.Tile.ItemStack.TotalAllocated -= takeAmount;
-
-            if (job.FetchItem.Amount > 0)
-                job.Requeue();
-
-
-            World.OnItemStackChanged(job.Tile.ItemStack);
-
-            if (CarriedItem == null)
-                CarriedItem = new ItemStack(new Item
-                {
-                    Type = job.FetchItem.Type
-                })
-                {
-                    Amount = takeAmount
-                };
-            else
-                CarriedItem.Amount += takeAmount;
+            CurrentJob = null;
         }
+
     }
 }

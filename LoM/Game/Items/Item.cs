@@ -5,5 +5,10 @@
 
         public string Type;
 
+        public Item(string type)
+        {
+            Type = type;
+        }
+
     }
 }

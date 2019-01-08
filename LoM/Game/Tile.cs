@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using LoM.Game.Items;
 
 namespace LoM.Game
@@ -24,6 +25,7 @@ namespace LoM.Game
         public TileType Type { get; private set; }
         public WorldObject WorldObject { get; private set; }
         public World World { get; set; }
+        public Character Character { get; set; }
         
 
         public float MovementCost
@@ -32,7 +34,7 @@ namespace LoM.Game
             {
                 if (WorldObject != null)
                     return WorldObject.MovementCost;
-                return 1;
+                return Type == TileType.None ? 5 : 1;
             }
         }
 
@@ -64,11 +66,15 @@ namespace LoM.Game
 
         public Tile[] GetNeighbors()
         {
-            var tiles = new Tile[4];
+            var tiles = new Tile[8];
             tiles[0] = North();
             tiles[1] = East();
             tiles[2] = South();
             tiles[3] = West();
+            tiles[4] = World.GetTileAt(X - 1, Y - 1);
+            tiles[5] = World.GetTileAt(X + 1, Y - 1);
+            tiles[6] = World.GetTileAt(X - 1, Y + 1);
+            tiles[7] = World.GetTileAt(X + 1, Y + 1);
             return tiles;
         }
 

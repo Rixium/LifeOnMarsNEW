@@ -6,6 +6,7 @@ using LoM.Game;
 using LoM.Game.Build;
 using LoM.Game.Jobs;
 using LoM.Serialization.Data;
+using Microsoft.Xna.Framework;
 
 namespace LoM.Managers
 {
@@ -58,6 +59,7 @@ namespace LoM.Managers
             foreach (var job in _activeJobs)
             {
                 if (job.Tile != tile) continue;
+                if (job.JobType == JobType.Fetch) continue;
 
                 job.Cancel();
                 _activeJobs.Remove(job);
@@ -197,7 +199,7 @@ namespace LoM.Managers
             if (itemRequirements == null) return;
             foreach (var item in itemRequirements)
             {
-                AddJob(new Job
+                var job = new Job
                 {
                     JobType = JobType.Fetch,
                     RequiredJobTime = 0,
@@ -207,10 +209,13 @@ namespace LoM.Managers
                         Type = item.Type
                     },
                     OnJobComplete = JobComplete,
-                    OnJobCancelled = JobCancelled,
+                    OnJobCancelled = OnFetchJobCancel,
                     StandOnTile = true,
                     OnRequeueRequest = OnRequeueRequest
-                });
+                };
+
+                job.OnJobCancelled += JobCancelled;
+                AddJob(job);
             }
         }
 
@@ -263,13 +268,20 @@ namespace LoM.Managers
                 if (job.FetchItem.Type != item.Type) continue;
                 var itemTile = _itemManager.FindItem(item);
                 if (itemTile == null) return null;
-                itemTile.ItemStack.TotalAllocated += Math.Min(item.Amount, itemTile.ItemStack.Amount);
                 job.Tile = itemTile;
                 return job;
             }
             
             CreateFetchJobs(new []{ item });
             return OnFetchJobRequest(item);
+        }
+
+        public void OnFetchJobCancel(Job job)
+        {
+            job.Assigned = false;
+            job.Assignee = null;
+            if (job.Tile?.ItemStack == null) return;
+            job.Tile.ItemStack.TotalAllocated = 0;
         }
     }
 }

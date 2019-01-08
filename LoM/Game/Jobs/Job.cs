@@ -38,8 +38,12 @@ namespace LoM.Game.Jobs
 
             JobTime += deltaTime;
 
-            if (JobTime >= RequiredJobTime)
-                OnJobComplete?.Invoke(this);
+            if ((JobTime < RequiredJobTime)) return;
+
+            if (JobType == JobType.Fetch && Tile?.ItemStack != null)
+                Tile.ItemStack.TotalAllocated = 0;
+
+            OnJobComplete?.Invoke(this);
         }
 
         public ItemRequirements ItemsRequired()

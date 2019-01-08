@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 
 namespace LoM.Game.Items
 {
@@ -9,14 +10,17 @@ namespace LoM.Game.Items
         public int Amount;
         public Item Item;
         public int MaxStack;
+        public int TotalAllocated;
 
-        public ItemStack(Item item)
+        public Dictionary<Character, int> Allocations = new Dictionary<Character, int>();
+
+        public ItemStack(Item item, int initialAmount)
         {
             Item = item;
+            Amount = initialAmount;
         }
 
         public int SpaceLeft => MaxStack - Amount;
-        public int TotalAllocated { get; set; } = 0;
 
         public bool AddToStack(int amount)
         {
@@ -37,6 +41,16 @@ namespace LoM.Game.Items
 
             stack.Amount -= amountToAdd;
             return stack;
+        }
+
+        public void AddAllocation(int min)
+        {
+            TotalAllocated += min;
+        }
+
+        public int RetrieveAllocationAmount(Character character)
+        {
+            return Allocations[character];
         }
 
     }

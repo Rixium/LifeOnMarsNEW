@@ -162,15 +162,11 @@ namespace LoM.Managers
             if (ContentChest.ItemData.ContainsKey(itemType) == false) return;
 
             var itemData = ContentChest.ItemData[itemType];
-            var item = new Item
-            {
-                Type = itemData.Type
-            };
+            var item = new Item(itemData.Type);
 
-            var itemStack = new ItemStack(item)
+            var itemStack = new ItemStack(item, MathHelper.Clamp(amount, 0, itemData.MaxStackSize))
             {
                 MaxStack = itemData.MaxStackSize,
-                Amount = MathHelper.Clamp(amount, 0, itemData.MaxStackSize),
                 Tile = tile
             };
 
@@ -617,33 +613,25 @@ namespace LoM.Managers
 
         private void DrawCharacter(SpriteBatch spriteBatch, Character character)
         {
-            float drawX = character.Tile.X * 32;
-            float drawY = character.Tile.Y * 32;
-            var targetX = drawX;
-            var targetY = drawY;
-
-            if (character.TargetTile != null)
-            {
-                targetX = character.TargetTile.X * 32;
-                targetY = character.TargetTile.Y * 32;
-            }
-
-            drawX -= (drawX - targetX) * character.MovementPercentage;
-            drawY -= (drawY - targetY) * character.MovementPercentage;
+            var drawVector = character.CurrVector;
+            var targetVector = character.PathVector;
 
 
-            spriteBatch.Draw(ContentChest.CharacterTypes[character.CharacterType], new Rectangle((int)drawX, (int)drawY, TileSize, TileSize), Color.White);
+            drawVector -= (drawVector - targetVector) * character.MovementPercentage;
+
+
+            spriteBatch.Draw(ContentChest.CharacterTypes[character.CharacterType], new Rectangle((int)drawVector.X, (int)drawVector.Y, TileSize, TileSize), Color.White);
 
             // TODO Character equipment instead of this, plus stuff like comfort rating etc, could make it quite sophisticated.
             if (character.Tile.Region?.SpaceSafe == false || character.Tile.Region == null)
             {
-                spriteBatch.Draw(ContentChest.Helmet, new Rectangle((int)drawX, (int)drawY, TileSize, TileSize), Color.White);
+                spriteBatch.Draw(ContentChest.Helmet, new Rectangle((int)drawVector.X, (int)drawVector.Y, TileSize, TileSize), Color.White);
             }
 
             if (character.CarriedItem != null)
             {
                 var itemImage = ContentChest.Items[character.CarriedItem.Item.Type];
-                spriteBatch.Draw(itemImage, new Rectangle((int)drawX + 16, (int) drawY + 16, 16, 16), Color.White);
+                spriteBatch.Draw(itemImage, new Rectangle((int)drawVector.X + 16, (int) drawVector.Y + 16, 16, 16), Color.White);
             }
             /*var text = character.CharacterType;
             var textWidth = ContentChest.MainFont.MeasureString(text).X;

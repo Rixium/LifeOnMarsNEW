@@ -2,10 +2,22 @@
 using System.Collections.Generic;
 using ConcurrentPriorityQueue;
 using LoM.Game;
-using Microsoft.Xna.Framework;
 
 namespace LoM.Pathfinding
 {
+
+    public enum Neighbor
+    {
+        NORTH,
+        EAST,
+        SOUTH,
+        WEST,
+        NW,
+        NE,
+        SW,
+        SE
+    }
+
     public class TilePath
     {
         private readonly Tile _endTile;
@@ -54,6 +66,7 @@ namespace LoM.Pathfinding
                     if (neighbor == null) continue;
                     if (neighbor.MovementCost == 0 && neighbor != _endTile) continue;
                     if (_closedList.Contains(neighbor)) continue;
+                    if (CanMoveToNeighbour(neighbor, neighbors) == false) continue;
 
                     int fScore = _fScores[bestFScoreTile] + Cost(bestFScoreTile, neighbor);
                     
@@ -69,6 +82,24 @@ namespace LoM.Pathfinding
             } while (_openList.Count > 0);
 
             return null;
+        }
+
+        private bool CanMoveToNeighbour(Tile neighbor, Tile[] tiles)
+        {
+            if (neighbor == tiles[(int) Neighbor.NW])
+                return tiles[(int) Neighbor.NORTH]?.MovementCost != 0 &&
+                       tiles[(int) Neighbor.WEST]?.MovementCost != 0;
+            if (neighbor == tiles[(int)Neighbor.NE])
+                return tiles[(int)Neighbor.NORTH]?.MovementCost != 0 &&
+                       tiles[(int)Neighbor.EAST]?.MovementCost != 0;
+            if (neighbor == tiles[(int)Neighbor.SE])
+                return tiles[(int)Neighbor.SOUTH]?.MovementCost != 0 &&
+                       tiles[(int)Neighbor.EAST]?.MovementCost != 0;
+            if (neighbor == tiles[(int)Neighbor.SW])
+                return tiles[(int)Neighbor.SOUTH]?.MovementCost != 0 &&
+                       tiles[(int)Neighbor.WEST]?.MovementCost != 0;
+
+            return true;
         }
 
         /// <summary>
@@ -118,7 +149,11 @@ namespace LoM.Pathfinding
 
         private int Cost(Tile child, Tile parent)
         {
-            return (int) child.MovementCost;
+            var currCost = child.MovementCost;
+
+            var distance = Math.Abs(child.X - parent.X) + Math.Abs(child.Y - parent.Y);
+            currCost += distance;
+            return (int) currCost;
         }
 
         private static float Heuristic(Tile a, Tile b)
