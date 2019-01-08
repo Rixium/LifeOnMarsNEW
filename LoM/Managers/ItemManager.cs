@@ -25,6 +25,7 @@ namespace LoM.Managers
             foreach (var item in ItemStacks)
             {
                 if (item.Tile == null) continue;
+                if (item.TotalAllocated >= item.Amount) continue;
                 if (item.Item.Type == itemRequirements.Type) return item.Tile;
             }
 

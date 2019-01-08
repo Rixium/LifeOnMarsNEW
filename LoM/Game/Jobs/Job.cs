@@ -82,7 +82,11 @@ namespace LoM.Game.Jobs
         {
             OnRequeueRequest?.Invoke(new Job
             {
-                FetchItem = FetchItem,
+                FetchItem = new ItemRequirements
+                {
+                    Type = FetchItem.Type,
+                    Amount = FetchItem.Amount
+                },
                 StandOnTile = StandOnTile,
                 JobType = JobType
             });

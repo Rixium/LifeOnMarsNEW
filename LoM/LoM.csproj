@@ -45,6 +45,7 @@
     <Compile Include="Constants\ObjectType.cs" />
     <Compile Include="Game\Build\BuildManager.cs" />
     <Compile Include="Game\Build\BuildMode.cs" />
+    <Compile Include="Game\Build\BuildRequest.cs" />
     <Compile Include="Game\Character.cs" />
     <Compile Include="Game\Items\Item.cs" />
     <Compile Include="Game\Items\ItemStack.cs" />

@@ -75,6 +75,7 @@ namespace LoM.Game
         {
             if (tile.PlaceObject(worldObject))
             {
+                tile.SetType(TileType.Ground);
                 OnWorldObjectPlaced?.Invoke(worldObject);
                 WorldObjects.Add(worldObject);
             }

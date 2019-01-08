@@ -24,7 +24,7 @@ namespace LoM.Managers
         private const int MapWidth = 50;
         private const int TileSize = 32;
         
-        private List<Tile> _buildTiles = new List<Tile>();
+        private List<BuildRequest> _buildTiles = new List<BuildRequest>();
 
         private bool _dragging;
         private bool _paused;
@@ -111,6 +111,8 @@ namespace LoM.Managers
         private void FinaliseSetup()
         {
             InputManager = new InputManager();
+            ItemManager = new ItemManager();
+
             InputManager.RegisterOnKeyPress(Keys.Space, ToggleGrid);
 
             InputManager.MouseClick += OnMouseClick;
@@ -125,11 +127,9 @@ namespace LoM.Managers
             World.OnTileChanged += OnTileChanged;
 
             UIManager = new UIManager(this, InputManager, BuildManager, SoundManager);
-            JobManager = new JobManager(BuildManager);
+            JobManager = new JobManager(BuildManager, ItemManager);
             JobManager.OnJobsComplete += SoundManager.JobComplete;
             RegionManager = new RegionManager();
-
-            ItemManager = new ItemManager();
 
             JobManager.OnJobComplete += RegionManager.OnJobComplete;
             World.OnTileChanged += JobManager.OnTileChanged;
@@ -148,9 +148,13 @@ namespace LoM.Managers
 
             SoundManager.PlayMainTrack();
 
-            DropItemAt(World.GetTileAt(MapWidth / 2 + 5, MapHeight / 2 + 10), "IronPlate", 1);
-            DropItemAt(World.GetTileAt(MapWidth / 2 + 10, MapHeight / 2 + 10), "IronPlate", 3);
-            DropItemAt(World.GetTileAt(MapWidth / 2 + 7, MapHeight / 2 + 12), "IronPlate", 2);
+            foreach (var tile in World.Tiles)
+            {
+                if (tile.WorldObject != null &&
+                    tile.WorldObject.ObjectName == "Stockpile")
+
+                    DropItemAt(tile, "IronPlate", 5);
+            }
         }
 
         private void DropItemAt(Tile tile, string itemType, int amount)
@@ -366,10 +370,13 @@ namespace LoM.Managers
 
         private void SelectTileAt(int tileX, int tileY)
         {
-            _buildTiles = new List<Tile>();
+            _buildTiles = new List<BuildRequest>();
             var tile = World.GetTileAt(tileX, tileY);
             if (tile == null) return;
-            _buildTiles.Add(tile);
+            _buildTiles.Add(new BuildRequest
+            {
+                BuildTile = tile
+            });
         }
 
         private void OnMouseReleased()
@@ -396,7 +403,7 @@ namespace LoM.Managers
         // TODO THIS NEEDS A BIG REFACTOR.
         private void SelectTilesInRange(int xStart, int yStart, int xEnd, int yEnd)
         {
-            _buildTiles = new List<Tile>();
+            _buildTiles = new List<BuildRequest>();
 
             if (xStart > xEnd)
             {
@@ -419,11 +426,13 @@ namespace LoM.Managers
                 // TODO REFACTOR
 
                 WorldObject proto = null;
+                var buildFloor = false;
 
                 if (BuildManager.BuildMode == BuildMode.WorldObject)
                 {
                     proto = WorldObjectChest.WorldObjectPrototypes[BuildManager.BuildObject];
-                    if (proto.HollowPlacement && x != xStart && x != xEnd && y != yStart && y != yEnd) continue;
+                    if (proto.HollowPlacement && x != xStart && x != xEnd && y != yStart && y != yEnd)
+                        buildFloor = true;
                 }
                 
                 var tile = World.GetTileAt(x, y);
@@ -435,13 +444,14 @@ namespace LoM.Managers
                 if (tile == null || tile.Type != TileType.None && BuildManager.BuildMode == BuildMode.Tile ||
                     (tile.Type == TileType.None && tile.WorldObject == null) && BuildManager.BuildMode == BuildMode.Destroy || (tile.WorldObject != null &&
                     BuildManager.BuildMode == BuildMode.WorldObject && !proto.DestroyOnPlace)) continue;
-
-                if (BuildManager.BuildMode == BuildMode.WorldObject && tile.Type == TileType.None)
-                        continue;
-
+                
                 if (_isDestroyWorldObjects && tile.WorldObject == null) continue; // TODO DUNNO?
 
-                _buildTiles.Add(tile);
+                _buildTiles.Add(new BuildRequest
+                {
+                    BuildTile = tile,
+                    BuildFloor = buildFloor
+                });
             }
         }
 
@@ -517,9 +527,12 @@ namespace LoM.Managers
             }
 
             if (_buildTiles != null)
-                foreach (var tile in _buildTiles)
+                foreach (var buildRequest in _buildTiles)
+                {
+                    var tile = buildRequest.BuildTile;
                     spriteBatch.Draw(ContentChest.Reticle, new Vector2(tile.X * TileSize, tile.Y * TileSize),
                         Color.White);
+                }
 
             if (JobManager.JobCount() > 0)
                 foreach (var job in new List<Job>(JobManager.GetJobs()))
@@ -531,38 +544,37 @@ namespace LoM.Managers
                     
                     var tile = job.Tile;
 
-                    // var isAssigned = job.Assigned;
+                    var isAssigned = job.Assigned;
 
                     if (job.JobType == JobType.Build)
                     {
                         spriteBatch.Draw(ContentChest.TileTextures[TileType.Ground],
                             new Vector2(tile.X * TileSize, tile.Y * TileSize),
-                            Color.White * 0.2f);
+                            Color.White * 0.8f);
                         spriteBatch.Draw(ContentChest.Pixel,
                             new Rectangle(tile.X * TileSize, tile.Y * TileSize + TileSize - coverHeight, TileSize, coverHeight),
-                            Color.Green * 0.3f);
+                            Color.Green * 0.8f);
                     }
                     else if (job.JobType == JobType.WorldObject)
                     {
                         spriteBatch.Draw(ContentChest.Pixel,
                             new Rectangle(tile.X * TileSize, tile.Y * TileSize, TileSize, TileSize),
-                            Color.White * 0.2f);
+                            Color.White * 0.8f);
                         spriteBatch.Draw(ContentChest.Pixel,
                             new Rectangle(tile.X * TileSize, tile.Y * TileSize + TileSize - coverHeight, TileSize, coverHeight),
-                            Color.Green * 0.3f);
+                            Color.Green * 0.8f);
                     }
                     else if (job.JobType == JobType.DestroyWorldObject || job.JobType == JobType.DestroyTile)
                         spriteBatch.Draw(ContentChest.Pixel,
                             new Rectangle(tile.X * TileSize, tile.Y * TileSize + TileSize - coverHeight, TileSize, coverHeight),
                             Color.Red * 0.15f);
-/*
 
                     if (!isAssigned) continue;
 
                     var sprite = ContentChest.CharacterTypes[job.Assignee.CharacterType];
                     spriteBatch.Draw(sprite,
                         new Vector2(tile.X * 32 + 16 - sprite.Width / 2,
-                            tile.Y * 32 + 16 - sprite.Height / 2), Color.White * 0.4f);*/
+                            tile.Y * 32 + 16 - sprite.Height / 2), Color.White * 0.4f);
                 }
 
 

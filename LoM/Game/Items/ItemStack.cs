@@ -16,7 +16,8 @@ namespace LoM.Game.Items
         }
 
         public int SpaceLeft => MaxStack - Amount;
-        
+        public int TotalAllocated { get; set; } = 0;
+
         public bool AddToStack(int amount)
         {
             if (amount > SpaceLeft) return false;

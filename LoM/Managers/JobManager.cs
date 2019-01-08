@@ -11,9 +11,10 @@ namespace LoM.Managers
 {
     public class JobManager
     {
-        
+
+        private ItemManager _itemManager;
         private readonly Dictionary<Character, List<Job>> _unreachables = new Dictionary<Character, List<Job>>();
-        private readonly List<Job> _activeJobs = new List<Job>();
+        private readonly HashSet<Job> _activeJobs = new HashSet<Job>();
         private readonly BuildManager _buildManager;
 
         public Action OnJobsComplete;
@@ -21,9 +22,10 @@ namespace LoM.Managers
 
         public float JobTime = 2f;
 
-        public JobManager(BuildManager buildManager)
+        public JobManager(BuildManager buildManager, ItemManager itemManager)
         {
             _buildManager = buildManager;
+            _itemManager = itemManager;
         }
 
         public void AddJob(Job job)
@@ -63,14 +65,15 @@ namespace LoM.Managers
             }
         }
 
-        public void CreateDestroyJobs(List<Tile> buildTiles, bool isDestroyWorldObject)
+        public void CreateDestroyJobs(List<BuildRequest> buildTiles, bool isDestroyWorldObject)
         {
             if (buildTiles == null || buildTiles.Count == 0) return;
 
             var jobType = isDestroyWorldObject ? JobType.DestroyWorldObject : JobType.DestroyTile;
 
-            foreach (var tile in buildTiles)
+            foreach (var buildRequest in buildTiles)
             {
+                var tile = buildRequest.BuildTile;
                 var standOnTile = true;
 
                 if (isDestroyWorldObject)
@@ -93,12 +96,13 @@ namespace LoM.Managers
             _activeJobs.Remove(obj);
         }
 
-        public void CreateTileJobs(List<Tile> buildTiles)
+        public void CreateTileJobs(List<BuildRequest> buildTiles)
         {
             if (buildTiles == null || buildTiles.Count == 0) return;
 
-            foreach (var tile in buildTiles)
+            foreach (var buildRequest in buildTiles)
             {
+                var tile = buildRequest.BuildTile;
                 AddJob(new Job
                 {
                     JobType = JobType.Build,
@@ -141,19 +145,31 @@ namespace LoM.Managers
             return job.WorldObject?.Place(job.Tile);
         }
 
-        public List<Job> GetJobs()
+        public HashSet<Job> GetJobs()
         {
             return _activeJobs;
         }
 
-        public void CreateBuildJobs(List<Tile> buildTiles)
+        public void CreateBuildJobs(List<BuildRequest> buildTiles)
         {
             if (buildTiles == null || buildTiles.Count == 0) return;
 
             var worldObjectPrototype = WorldObjectChest.WorldObjectPrototypes[_buildManager.BuildObject];
             
-            foreach (var tile in buildTiles)
+            
+            foreach (var buildRequest in buildTiles)
             {
+                if (buildRequest.BuildFloor)
+                {
+                    CreateTileJobs(new List<BuildRequest>()
+                    {
+                        buildRequest
+                    });
+                    continue;
+                }
+                
+                var tile = buildRequest.BuildTile;
+
                 var newWorldObject = worldObjectPrototype.Place(tile);
                 
                 if (newWorldObject.ItemRequirements != null)
@@ -200,9 +216,9 @@ namespace LoM.Managers
 
         private void OnRequeueRequest(Job job)
         {
-            job.OnJobComplete = JobComplete;
-            job.OnJobCancelled = JobCancelled;
-            job.OnRequeueRequest = OnRequeueRequest;
+            job.OnJobComplete += JobComplete;
+            job.OnJobCancelled += JobCancelled;
+            job.OnRequeueRequest += OnRequeueRequest;
             AddJob(job);
         }
 
@@ -221,6 +237,7 @@ namespace LoM.Managers
             foreach (var job in _activeJobs)
             {
                 if (job.Assigned) continue;
+                if (job.JobType == JobType.Fetch) continue;
                 if (job.Tile == null) continue;
 
                 var jobDistance = Math.Abs(character.Tile.X - job.Tile.X) +
@@ -236,13 +253,18 @@ namespace LoM.Managers
 
         public Job OnFetchJobRequest(ItemRequirements item)
         {
+            if (item == null) return null;
             if (_activeJobs.Count == 0) return null;
 
             foreach (var job in _activeJobs)
             {
                 if (job.JobType != JobType.Fetch) continue;
-                if (job.Assigned) continue;
+                if (job.Assigned || job.Assignee != null) continue;
                 if (job.FetchItem.Type != item.Type) continue;
+                var itemTile = _itemManager.FindItem(item);
+                if (itemTile == null) continue;
+                itemTile.ItemStack.TotalAllocated += Math.Min(item.Amount, itemTile.ItemStack.Amount);
+                job.Tile = itemTile;
                 return job;
             }
 
