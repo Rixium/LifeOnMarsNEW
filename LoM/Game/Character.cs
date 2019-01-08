@@ -266,6 +266,8 @@ namespace LoM.Game
             if (job.FetchItem.Amount > 0)
                 job.Requeue();
 
+            job.Tile.ItemStack.TotalAllocated -= takeAmount;
+
             World.OnItemStackChanged(job.Tile.ItemStack);
 
             if (CarriedItem == null)
