@@ -2,7 +2,7 @@
 	"Name":"Door",
 	"HollowPlacement":false,
 	"MergeWithNeighbors":false,
-	"DragBuild":false,
+	"DragBuild":true,
 	"CanRotate":true,
 	"Encloses":true,
 	"MovementCost":1,

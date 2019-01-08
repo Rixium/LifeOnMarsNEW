@@ -262,13 +262,14 @@ namespace LoM.Managers
                 if (job.Assigned || job.Assignee != null) continue;
                 if (job.FetchItem.Type != item.Type) continue;
                 var itemTile = _itemManager.FindItem(item);
-                if (itemTile == null) continue;
+                if (itemTile == null) return null;
                 itemTile.ItemStack.TotalAllocated += Math.Min(item.Amount, itemTile.ItemStack.Amount);
                 job.Tile = itemTile;
                 return job;
             }
-
-            return null;
+            
+            CreateFetchJobs(new []{ item });
+            return OnFetchJobRequest(item);
         }
     }
 }

@@ -245,28 +245,31 @@ namespace LoM.Game
             if (CarriedItem != null && job.FetchItem.Type != CarriedItem.Item.Type) return;
 
             var requiredAmount = job.FetchItem.Amount;
-
-            if (CarriedItem != null)
-                requiredAmount -= CarriedItem.Amount;
-
+            
             if (job.Tile?.ItemStack == null)
             {
                 return;
             }
-            
+
+            if (CarriedItem != null)
+                requiredAmount -= CarriedItem.Amount;
+
+            CurrentJob.Assigned = false;
+            CurrentJob.Assignee = null;
             CurrentJob = null;
             TargetTile = Tile;
 
             var availableAmount = job.Tile.ItemStack.Amount;
             var takeAmount = MathHelper.Min(requiredAmount, availableAmount);
 
-            job.FetchItem.Amount -= takeAmount;
+            if (takeAmount <= 0) return;
+            
             job.Tile.ItemStack.Amount -= takeAmount;
+            job.Tile.ItemStack.TotalAllocated -= takeAmount;
 
             if (job.FetchItem.Amount > 0)
                 job.Requeue();
 
-            job.Tile.ItemStack.TotalAllocated -= takeAmount;
 
             World.OnItemStackChanged(job.Tile.ItemStack);
 
