@@ -47,6 +47,9 @@
     <Compile Include="Game\Build\BuildMode.cs" />
     <Compile Include="Game\Build\BuildRequest.cs" />
     <Compile Include="Game\Character.cs" />
+    <Compile Include="Game\Components\IComponent.cs" />
+    <Compile Include="Game\Components\JobberComponent.cs" />
+    <Compile Include="Game\Components\NavigatorComponent.cs" />
     <Compile Include="Game\Items\Item.cs" />
     <Compile Include="Game\Items\ItemStack.cs" />
     <Compile Include="Game\Region.cs" />
@@ -93,6 +96,7 @@
     <Compile Include="Game\World.cs" />
     <Compile Include="Util\FrameCounter.cs" />
     <Compile Include="Serialization\Data\RendererData.cs" />
+    <Compile Include="Util\Randomizer.cs" />
     <Compile Include="Util\RenderHelper.cs" />
     <Compile Include="Serialization\Data\WorldObjectData.cs" />
   </ItemGroup>

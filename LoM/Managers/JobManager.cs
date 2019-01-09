@@ -231,7 +231,7 @@ namespace LoM.Managers
         {
         }
 
-        public Job OnJobRequest(Character character)
+        public Job RequestJob(Character character)
         {
             var nearestJob = GetJob();
             if (nearestJob == null) return null;

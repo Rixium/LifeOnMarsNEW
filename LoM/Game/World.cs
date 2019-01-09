@@ -32,13 +32,6 @@ namespace LoM.Game
                 {
                     OnTileChanged = TileChanged
                 };
-
-            Characters.Add(new Character(Tiles[width / 2, height / 2], "Dan"));
-            Characters.Add(new Character(Tiles[width / 2 + 2, height / 2], "Tiffany"));
-            Characters.Add(new Character(Tiles[width / 2 - 2, height / 2], "Mario"));
-            Characters.Add(new Character(Tiles[width / 2 - 2, height / 2 - 2], "Lara"));
-            Characters.Add(new Character(Tiles[width / 2, height / 2 + 2], "Bran"));
-            Characters.Add(new Character(Tiles[width / 2, height / 2 - 2], "Grace"));
         }
 
         public int Width { get; }
@@ -51,6 +44,7 @@ namespace LoM.Game
         {
             foreach (var character in Characters)
                 character.Update(deltaTime);
+
             foreach (var worldObject in WorldObjects)
                 worldObject.Update(deltaTime);
         }

@@ -9,7 +9,7 @@ namespace LoM.Game.WorldObjects
 
         public float OpeningTime = 0.3f;
         private bool _startedOpening;
-
+        
         public float OpenPercentage;
         public WorldObject Owner;
         public World World => Owner.Tile.World;
@@ -26,8 +26,7 @@ namespace LoM.Game.WorldObjects
             var characterNear = false;
             foreach (var c in World.Characters)
             {
-                if (Owner.Tile != c.TargetTile &&
-                    Owner.Tile != c.Tile)
+                if (Owner.Tile != c.Tile)
                     continue;
 
                 OpenPercentage += changeAmount;
