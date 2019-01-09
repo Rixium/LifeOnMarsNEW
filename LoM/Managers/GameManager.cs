@@ -582,8 +582,9 @@ namespace LoM.Managers
 
         private void DrawCharacter(SpriteBatch spriteBatch, Character character)
         {
-            var drawVector = GetTileWorldPosition(character.Tile);
-            
+            var drawVector = character.Position;
+            drawVector *= TileSize;
+
             spriteBatch.Draw(ContentChest.CharacterTypes[character.CharacterType],
                 new Rectangle((int) drawVector.X, (int) drawVector.Y, TileSize, TileSize), Color.White);
 

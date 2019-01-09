@@ -1,27 +1,27 @@
 ﻿using System.Collections.Generic;
 using LoM.Game.Components;
 using LoM.Game.Items;
-using LoM.Util;
 using Microsoft.Xna.Framework;
 
 namespace LoM.Game
 {
     public class Character
     {
+        private readonly List<IComponent> _characterComponents = new List<IComponent>();
         public ItemStack CarriedItem;
-
+        public Vector2 Position;
         public string CharacterType;
         
-        private readonly List<IComponent> _characterComponents = new List<IComponent>();
-
-        public float Speed = 5f;
-
         public Character(Tile tile, string characterType)
         {
             Tile = tile;
+            Position = new Vector2(Tile.X, Tile.Y);
+
             Tile.Character = this;
             CharacterType = characterType;
         }
+
+        public Tile Tile { get; private set; }
 
         public void AddComponent(IComponent component)
         {
@@ -29,25 +29,21 @@ namespace LoM.Game
             component.Character = this;
         }
 
-        public Tile Tile { get; private set; }
-
-        public World World => Tile.World;
-
         public void Update(float deltaTime)
-        {   
-            foreach(var component in _characterComponents)
+        {
+            foreach (var component in _characterComponents)
                 component.Update(deltaTime);
         }
-        
+
         public void OnNewPathRequest(Tile endTile)
         {
-
         }
 
         public void SetTile(Tile newTile)
         {
             Tile = newTile;
+            Tile.Character = this;
         }
-
+        
     }
 }

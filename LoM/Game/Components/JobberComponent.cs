@@ -28,9 +28,7 @@ namespace LoM.Game.Components
 
         public void DoJob(float deltaTime)
         {
-            if (ActiveJob == null) return;
-            Console.WriteLine("HI");
-            ActiveJob.DoWork(deltaTime);
+            ActiveJob?.DoWork(deltaTime);
         }
 
         private void GetJob()
@@ -48,5 +46,6 @@ namespace LoM.Game.Components
         {
             ActiveJob = null;
         }
+
     }
 }

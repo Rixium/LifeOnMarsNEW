@@ -105,7 +105,7 @@ namespace LoM.Game
 
             ItemStack = stack;
             return null;
-        } 
-
+        }
+        
     }
 }

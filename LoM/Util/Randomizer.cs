@@ -7,7 +7,7 @@ namespace LoM.Util
 
         private static Random _random = new Random();
 
-        public static float NextFloat(int max, int min)
+        public static float NextFloat(float max, float min)
         {
             var range = max - (double) min;
             var sample = _random.NextDouble();
