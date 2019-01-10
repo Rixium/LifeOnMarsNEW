@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using LoM.Game.Components;
 using LoM.Game.Items;
+using LoM.Game.Jobs;
 using Microsoft.Xna.Framework;
 
 namespace LoM.Game
@@ -44,6 +45,27 @@ namespace LoM.Game
             Tile = newTile;
             Tile.Character = this;
         }
-        
+
+        public bool OnVerifyJob(Job job)
+        {
+            var itemRequirements = job.ItemsRequired();
+            if (itemRequirements == null) return true;
+            if (CarriedItem == null) return false;
+            if (CarriedItem.Item.Type != itemRequirements.Type) return false;
+            return CarriedItem.Amount > 0;
+        }
+
+        public void OnJobWorked(Job job)
+        {
+            var itemRequirements = job.ItemsRequired();
+            if (itemRequirements == null) return;
+            if (CarriedItem == null) return;
+            if (CarriedItem.Item.Type != itemRequirements.Type) return;
+            
+            job.AllocateItem(CarriedItem);
+
+            if (CarriedItem.Amount <= 0)
+                CarriedItem = null;
+        }
     }
 }

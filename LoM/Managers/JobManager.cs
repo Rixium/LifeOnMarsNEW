@@ -174,11 +174,6 @@ namespace LoM.Managers
 
                 var newWorldObject = worldObjectPrototype.Place(tile);
                 
-                if (newWorldObject.ItemRequirements != null)
-                {
-                    CreateFetchJobs(newWorldObject.ItemRequirements);
-                }
-
                 AddJob(new Job
                 {
                     JobType = JobType.WorldObject,
@@ -193,40 +188,7 @@ namespace LoM.Managers
 
             }
         }
-
-        private void CreateFetchJobs(ItemRequirements[] itemRequirements)
-        {
-            if (itemRequirements == null) return;
-            foreach (var item in itemRequirements)
-            {
-                var job = new Job
-                {
-                    JobType = JobType.Fetch,
-                    RequiredJobTime = 0,
-                    FetchItem = new ItemRequirements
-                    {
-                        Amount = item.Amount,
-                        Type = item.Type
-                    },
-                    OnJobComplete = JobComplete,
-                    OnJobCancelled = OnFetchJobCancel,
-                    StandOnTile = true,
-                    OnRequeueRequest = OnRequeueRequest
-                };
-
-                job.OnJobCancelled += JobCancelled;
-                AddJob(job);
-            }
-        }
-
-        private void OnRequeueRequest(Job job)
-        {
-            job.OnJobComplete += JobComplete;
-            job.OnJobCancelled += JobCancelled;
-            job.OnRequeueRequest += OnRequeueRequest;
-            AddJob(job);
-        }
-
+        
         public void OnTileChanged(Tile tile)
         {
         }
@@ -255,33 +217,41 @@ namespace LoM.Managers
             
             return nearestJob;
         }
-
-        public Job OnFetchJobRequest(ItemRequirements item)
-        {
-            if (item == null) return null;
-            if (_activeJobs.Count == 0) return null;
-
-            foreach (var job in _activeJobs)
-            {
-                if (job.JobType != JobType.Fetch) continue;
-                if (job.Assigned || job.Assignee != null) continue;
-                if (job.FetchItem.Type != item.Type) continue;
-                var itemTile = _itemManager.FindItem(item);
-                if (itemTile == null) return null;
-                job.Tile = itemTile;
-                return job;
-            }
-            
-            CreateFetchJobs(new []{ item });
-            return OnFetchJobRequest(item);
-        }
-
+        
         public void OnFetchJobCancel(Job job)
         {
             job.Assigned = false;
             job.Assignee = null;
             if (job.Tile?.ItemStack == null) return;
             job.Tile.ItemStack.TotalAllocated = 0;
+        }
+
+        public Job GetFetchJob(ItemRequirements requirements)
+        {
+            if (requirements == null) return null;
+            if (requirements.Amount <= 0) return null;
+
+            var job = new Job
+            {
+                JobType = JobType.Fetch,
+                FetchItem = new FetchRequest
+                {
+                    ItemType = requirements.Type,
+                    Amount = requirements.Amount,
+                },
+                RequiredJobTime = 0,
+                OnJobComplete = JobComplete,
+                OnJobCancelled = OnFetchJobCancel,
+                StandOnTile = true,
+                Tile = _itemManager.FindItem(requirements)
+            };
+
+            if (job.Tile == null) return job;
+
+            job.FetchItem.Allocated = Math.Min(job.Tile.ItemStack.Available, job.FetchItem.Amount);
+            job.Tile.ItemStack.TotalAllocated += job.FetchItem.Allocated;
+
+            return job;
         }
     }
 }

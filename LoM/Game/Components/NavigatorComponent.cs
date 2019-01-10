@@ -88,6 +88,7 @@ namespace LoM.Game.Components
 
         private void CheckTargetTile(float deltaTime)
         {
+            if (TargetTile == null) return;
             if (_path == null || _path.Count == 0)
                 OnAtTargetTile?.Invoke(deltaTime);
         }
@@ -95,7 +96,6 @@ namespace LoM.Game.Components
         private void FinishNavigating()
         {
             _path = null;
-            TargetTile = null;
             OnArrivedAtDestination?.Invoke();
         }
 
@@ -103,8 +103,10 @@ namespace LoM.Game.Components
         {
             var newPath = new TilePath(Character.Tile, TargetTile)
                 .FindPath(true);
-            if (newPath == null) return;
             _path = newPath;
+
+            if (_path == null)
+                TargetTile = null;
         }
 
         public void OnNavigationRequest(Tile targetTile)

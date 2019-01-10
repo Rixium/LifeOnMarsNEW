@@ -121,11 +121,12 @@ namespace LoM.Managers
             SoundManager.PlayMainTrack();
             
             AddCharacter("Dan", World.Tiles[MapWidth / 2, MapHeight / 2]);
-            AddCharacter("Tiffany", World.Tiles[MapWidth / 2 + 1, MapHeight / 2]);
-            AddCharacter("Mario", World.Tiles[MapWidth / 2, MapHeight / 2 + 1]);
-            AddCharacter("Lara", World.Tiles[MapWidth / 2 + 1, MapHeight / 2 + 1]);
-            AddCharacter("Bran", World.Tiles[MapWidth / 2 - 1, MapHeight / 2]);
-            AddCharacter("Grace", World.Tiles[MapWidth / 2, MapHeight / 2 - 1]);
+//            AddCharacter("Tiffany", World.Tiles[MapWidth / 2 + 1, MapHeight / 2]);
+//            AddCharacter("Mario", World.Tiles[MapWidth / 2, MapHeight / 2 + 1]);
+//            AddCharacter("Lara", World.Tiles[MapWidth / 2 + 1, MapHeight / 2 + 1]);
+//            AddCharacter("Bran", World.Tiles[MapWidth / 2 - 1, MapHeight / 2]);
+//            AddCharacter("Grace", World.Tiles[MapWidth / 2, MapHeight / 2 - 1]);
+//            
         }
 
         private void AddCharacter(string name, Tile tile)
@@ -140,6 +141,8 @@ namespace LoM.Managers
             newCharacter.AddComponent(navComponent);
 
             jobComponent.OnNewPathRequest += navComponent.OnNavigationRequest;
+            jobComponent.VerifyJob += newCharacter.OnVerifyJob;
+            jobComponent.OnJobWorked += newCharacter.OnJobWorked;
             navComponent.OnAtTargetTile += jobComponent.DoJob;
 
             World.Characters.Add(newCharacter);

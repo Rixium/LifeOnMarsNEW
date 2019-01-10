@@ -13,23 +13,22 @@ namespace LoM.Game.Jobs
 
         public bool Cancelled;
         public float JobTime;
-        public Action<Job> OnJobCancelled;
-
-        public Action<Job> OnJobComplete;
         public float RequiredJobTime;
+
+        public Action<Job> OnJobCancelled;
+        public Action<Job> OnJobComplete;
+        public Action<Job> OnRequeueRequest;
 
         public Tile Tile;
         public bool StandOnTile;
         public JobType JobType { get; set; }
 
         public WorldObject WorldObject { get; set; }
-        public ItemRequirements[] ItemRequirements { get; set; }
-        public ItemRequirements FetchItem { get; set; }
 
+        public ItemRequirements[] ItemRequirements { get; set; }
         public ItemRequirements CacheItems;
 
-
-        public Action<Job> OnRequeueRequest;
+        public FetchRequest FetchItem { get; set; }
 
         public void DoWork(float deltaTime)
         {
@@ -39,10 +38,7 @@ namespace LoM.Game.Jobs
             JobTime += deltaTime;
 
             if ((JobTime < RequiredJobTime)) return;
-
-            if (JobType == JobType.Fetch && Tile?.ItemStack != null)
-                Tile.ItemStack.TotalAllocated = 0;
-
+            
             OnJobComplete?.Invoke(this);
         }
 
@@ -61,34 +57,24 @@ namespace LoM.Game.Jobs
         {
             if (ItemRequirements == null) return;
 
-            if (CacheItems != null && CacheItems.Type == allocateItem.Item.Type)
+            foreach (var requirement in ItemRequirements)
             {
-                var takeAmount = Math.Min(allocateItem.Amount, CacheItems.Amount);
-                CacheItems.Amount -= takeAmount;
-                allocateItem.Amount -= takeAmount;
-
-                if (CacheItems.Amount <= 0)
-                    CacheItems = null;
-
-                return;
-            }
-
-            foreach (var item in ItemRequirements)
-            {
-                if (item.Type != allocateItem.Item.Type) continue;
-                var takeAmount = Math.Min(allocateItem.Amount, item.Amount);
-                item.Amount -= takeAmount;
+                if (requirement.Type != allocateItem.Item.Type) continue;
+                var takeAmount = Math.Min(requirement.Amount, allocateItem.Amount);
+                requirement.Amount -= takeAmount;
                 allocateItem.Amount -= takeAmount;
             }
+
+            CacheItems = null;
         }
 
         public void Requeue()
         {
             OnRequeueRequest?.Invoke(new Job
             {
-                FetchItem = new ItemRequirements
+                FetchItem = new FetchRequest
                 {
-                    Type = FetchItem.Type,
+                    ItemType = FetchItem.ItemType,
                     Amount = FetchItem.Amount
                 },
                 StandOnTile = StandOnTile,

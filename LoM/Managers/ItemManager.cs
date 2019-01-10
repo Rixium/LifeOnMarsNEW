@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Security;
 using LoM.Game;
 using LoM.Game.Items;
 using LoM.Serialization.Data;
@@ -17,6 +18,7 @@ namespace LoM.Managers
 
         public void AddItems(ItemStack itemStack)
         {
+            itemStack.OnItemStackChanged = OnStackChange;
             ItemStacks.Add(itemStack);
         }
 

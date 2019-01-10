@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using LoM.Game.Jobs;
 using Microsoft.Xna.Framework;
 
 namespace LoM.Game.Items
@@ -6,13 +8,12 @@ namespace LoM.Game.Items
     public class ItemStack
     {
 
+        public Action<ItemStack> OnItemStackChanged;
         public Tile Tile;
         public int Amount;
         public Item Item;
         public int MaxStack;
         public int TotalAllocated;
-
-        public Dictionary<Character, int> Allocations = new Dictionary<Character, int>();
 
         public ItemStack(Item item, int initialAmount)
         {
@@ -21,6 +22,7 @@ namespace LoM.Game.Items
         }
 
         public int SpaceLeft => MaxStack - Amount;
+        public int Available => Amount - TotalAllocated;
 
         public bool AddToStack(int amount)
         {
@@ -42,16 +44,16 @@ namespace LoM.Game.Items
             stack.Amount -= amountToAdd;
             return stack;
         }
-
-        public void AddAllocation(int min)
+        
+        public ItemStack Take(FetchRequest request)
         {
-            TotalAllocated += min;
-        }
+            var takeAmount = request.Allocated;
 
-        public int RetrieveAllocationAmount(Character character)
-        {
-            return Allocations[character];
-        }
+            Amount -= takeAmount;
+            TotalAllocated -= takeAmount;
 
+            OnItemStackChanged?.Invoke(this);
+            return new ItemStack(Item, takeAmount);
+        }
     }
 }
