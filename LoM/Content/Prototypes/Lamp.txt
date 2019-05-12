@@ -1,0 +1,20 @@
+{
+	"Name":"Lamp",
+	"HollowPlacement":false,
+	"MergeWithNeighbors":false,
+	"DragBuild":false,
+	"CanRotate":false,
+	"Encloses":false,
+	"MovementCost":1,
+	"DestroyOnPlace":false,
+	"EmitsLight":true,
+	"Renderer": {
+		"Name":"StaticRenderer"
+	},
+	"ItemRequirements": [
+		{
+			"Type":"IronPlate",
+			"Amount":5
+		}
+	]
+}

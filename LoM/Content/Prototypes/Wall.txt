@@ -5,6 +5,7 @@
 	"DragBuild":true,
 	"Encloses":true,
 	"MovementCost":0,
+	"BlocksLight":true,
 	"Renderer": {
 		"Name":"StaticRenderer"
 	},

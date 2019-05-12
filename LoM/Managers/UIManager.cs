@@ -93,7 +93,7 @@ namespace LoM.Managers
             };
 
             button = new Button(10, button.Y + button.GetBounds().Height + 10, buttonSettings);
-            _inputManager.RegisterUIElement(() => { _buildManager.SetBuildObject("Stockpile"); }, button);
+            _inputManager.RegisterUIElement(() => { _buildManager.SetBuildObject("Lamp"); }, button);
             button.OnClick += _soundManager.OnButtonClick;
             UIElements.Add(button);
 
@@ -171,7 +171,8 @@ namespace LoM.Managers
             var mousePos = _inputManager.GetMousePosition();
 
             if (_mouseOverTile != null &&
-                _mouseOverTile.ItemStack != null)
+                _mouseOverTile.ItemStack != null
+                && _mouseOverTile.ItemStack.Amount > 0)
             {
                 var itemData = ContentChest.ItemData[_mouseOverTile.ItemStack.Item.Type];
                 var str = $"{itemData.Name} x{_mouseOverTile.ItemStack.Amount}";

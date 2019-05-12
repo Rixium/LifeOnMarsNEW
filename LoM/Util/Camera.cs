@@ -5,6 +5,7 @@ namespace LoM.Util
 {
     public class Camera
     {
+
         public int X;
         public int Y;
         public float Scale = 2;

@@ -10,9 +10,11 @@ namespace LoM.Game.Components
     public class JobberComponent : IComponent
     {
 
+        public Func<ItemRequirements, ItemRequirements> CheckRequirements;
         public Func<Job, bool> VerifyJob;
         public Action<Tile> OnNewPathRequest;
         public Action<Job> OnJobWorked;
+        public Action<ItemStack> OnTakeItemStack;
 
         public Character Character { get; set; }
         public JobManager JobManager;
@@ -31,6 +33,11 @@ namespace LoM.Game.Components
             {
                 _activeJob = value;
                 if (_activeJob == null) return;
+                if (_activeJob.Cancelled)
+                {
+                    _activeJob = null;
+                    return;
+                }
                 OnNewPathRequest?.Invoke(_activeJob.Tile);
             }
         }
@@ -48,13 +55,14 @@ namespace LoM.Game.Components
             if (ActiveJob == null) return;
             OnJobWorked?.Invoke(ActiveJob);
             ActiveJob?.DoWork(deltaTime);
-
-            if (ActiveJob?.ItemsRequired() == null) return;
-
-            AssignedJobs.Push(ActiveJob);
-            ActiveJob = null;
+            //
+            //            if (ActiveJob?.ItemsRequired() == null) return;
+            //
+            //            AssignedJobs.Push(ActiveJob);
+            //            ActiveJob = null;
         }
 
+        // Gets a new job if the stack is empty and sets assigns it pushing it to the stack, ready for next iteration.
         private void GetJob()
         {
             if (AssignedJobs.Count > 0)
@@ -73,6 +81,8 @@ namespace LoM.Game.Components
             AssignedJobs.Push(newJob);
         }
 
+        // Gets a job from the stack if it isn't empty. If job cannot be verified for some reason, then it will be resolved
+        // and likely a new job will be created to resolve it, pushing the old job to the stack.
         private void GetJobFromStack()
         {
             var jobCheck = AssignedJobs.Peek();
@@ -87,9 +97,14 @@ namespace LoM.Game.Components
             GetFetchJob(jobCheck.ItemsRequired());
         }
         
+        // Creates a fetch job for the user depending on the required items passed.
+        // Any buffs can be added through the CheckRequirements callback, which may also
+        // check for the characters carry amount.
         private void GetFetchJob(ItemRequirements requirements)
         {
-            var fetchJob = JobManager.GetFetchJob(requirements);
+            var actualRequirements = CheckRequirements?.Invoke(requirements);
+            var fetchJob = JobManager.GetFetchJob(actualRequirements);
+
             if (fetchJob?.Tile == null) return;
 
             fetchJob.Assigned = true;
@@ -101,6 +116,8 @@ namespace LoM.Game.Components
             AssignedJobs.Push(fetchJob);
         }
 
+        // When a fetch job is complete further logic is required to add the item from the job
+        // to the users hand through the callback Pickup item.
         private void OnFetchJobComplete(Job job)
         {
             var jobItemStack = job.Tile.ItemStack;
@@ -111,29 +128,45 @@ namespace LoM.Game.Components
                 Amount = job.FetchItem.Allocated,
                 ItemType = job.FetchItem.ItemType
             };
-
-            if (Character.CarriedItem != null)
-            {
-                newFetchItem.Amount -= Character.CarriedItem.Amount;
-                newFetchItem.Allocated -= Character.CarriedItem.Amount;
-            }
             
             var itemStack = jobItemStack.Take(newFetchItem);
-
-            if (Character.CarriedItem == null)
-                Character.CarriedItem = itemStack;
-            else Character.CarriedItem.Amount += itemStack.Amount;
-            
+            OnTakeItemStack?.Invoke(itemStack);
         }
 
-        private void OnJobCancelled(Job obj)
+        private void OnJobCancelled(Job job)
         {
-            
+            if (ActiveJob == job)
+            {
+                ActiveJob = null;
+            }
         }
 
         private void OnJobComplete(Job job)
         {
             ActiveJob = null;
+        }
+
+        public void UnAssignJob()
+        {
+            var oldJob = ActiveJob;
+            ActiveJob = null;
+
+            if (oldJob != null)
+            {
+                oldJob.Blacklist.Add(Character);
+                oldJob.Assigned = false;
+                oldJob.Assignee = null;
+                oldJob.OnCannotComplete?.Invoke(oldJob);
+            }
+
+            while (AssignedJobs.Count > 0)
+            {
+                oldJob = AssignedJobs.Pop();
+                oldJob.Blacklist.Add(Character);
+                oldJob.Assigned = false;
+                oldJob.Assignee = null;
+                oldJob.OnCannotComplete?.Invoke(oldJob);
+            }
         }
 
     }

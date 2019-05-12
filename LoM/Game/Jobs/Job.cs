@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using LoM.Game.Items;
 using LoM.Managers;
@@ -8,6 +9,9 @@ namespace LoM.Game.Jobs
 {
     public class Job
     {
+
+        public HashSet<Character> Blacklist = new HashSet<Character>();
+
         public bool Assigned;
         public Character Assignee;
 
@@ -29,6 +33,7 @@ namespace LoM.Game.Jobs
         public ItemRequirements CacheItems;
 
         public FetchRequest FetchItem { get; set; }
+        public Action<Job> OnCannotComplete { get; set; }
 
         public void DoWork(float deltaTime)
         {

@@ -27,6 +27,7 @@ namespace LoM.Managers
 
         private bool _dragging;
         private bool _isDestroyWorldObjects;
+        private float _time;
         private bool _paused;
 
         private bool _showGrid;
@@ -45,6 +46,8 @@ namespace LoM.Managers
         public JobManager JobManager;
 
         public Action OnJobsComplete;
+        public Action<Tile> OnStockpileCreated;
+
         public RegionManager RegionManager;
 
         public Character SelectedCharacter;
@@ -53,6 +56,8 @@ namespace LoM.Managers
         public UIManager UIManager;
 
         public World World;
+        private bool _isDay = true;
+        private bool _isNight;
 
         public GameManager(ContentChest contentChest)
         {
@@ -95,13 +100,17 @@ namespace LoM.Managers
             BuildManager = new BuildManager(this, InputManager);
             SoundManager = new SoundManager(this, BuildManager);
             UIManager = new UIManager(this, InputManager, BuildManager, SoundManager);
-            JobManager = new JobManager(BuildManager, ItemManager);
+            JobManager = new JobManager(this, BuildManager, ItemManager);
 
             World.OnItemStackChange += ItemManager.OnStackChange;
             World.OnTileChanged += SoundManager.TileChanged;
             World.OnTileChanged += OnTileChanged;
             World.OnWorldObjectPlaced += OnWorldObjectPlaced;
+            World.OnWorldObjectPlaced += (obj) => { JobManager.ClearBlacklists(); };
+            World.OnWorldObjectDestroyed += (obj) => { JobManager.ClearBlacklists(); };
+
             JobManager.OnJobsComplete += SoundManager.JobComplete;
+            JobManager.OnJobsComplete += ItemManager.DeallocateAll;
             JobManager.OnJobComplete += RegionManager.OnJobComplete;
             World.OnTileChanged += JobManager.OnTileChanged;
             InputManager.RegisterOnKeyPress(Keys.Space, ToggleGrid);
@@ -110,23 +119,28 @@ namespace LoM.Managers
             InputManager.RightClick += OnMouseRightClick;
             InputManager.MouseReleased += OnMouseReleased;
             InputManager.OnMouseMoved += UIManager.OnMouseMoved;
+            OnStockpileCreated += ItemManager.OnStockpileCreated;
 
             SetupCamera();
 
             foreach (var tile in World.Tiles)
-                if (tile.WorldObject != null &&
-                    tile.WorldObject.ObjectName == "Stockpile")
-                    DropItemAt(tile, "IronPlate", 5);
+            {
+                if (tile.WorldObject == null) continue;
+                if (tile.WorldObject.StoresItems == false) continue;
+                OnStockpileCreated?.Invoke(tile);
+            }
+
+            DropItemAt(World.Tiles[MapWidth / 2, MapHeight / 2 + 7], "IronPlate", 5);
+            DropItemAt(World.Tiles[MapWidth / 2, MapHeight / 2 + 9], "IronPlate", 5);
 
             SoundManager.PlayMainTrack();
             
             AddCharacter("Dan", World.Tiles[MapWidth / 2, MapHeight / 2]);
-//            AddCharacter("Tiffany", World.Tiles[MapWidth / 2 + 1, MapHeight / 2]);
-//            AddCharacter("Mario", World.Tiles[MapWidth / 2, MapHeight / 2 + 1]);
-//            AddCharacter("Lara", World.Tiles[MapWidth / 2 + 1, MapHeight / 2 + 1]);
-//            AddCharacter("Bran", World.Tiles[MapWidth / 2 - 1, MapHeight / 2]);
-//            AddCharacter("Grace", World.Tiles[MapWidth / 2, MapHeight / 2 - 1]);
-//            
+            AddCharacter("Tiffany", World.Tiles[MapWidth / 2 + 1, MapHeight / 2]);
+            AddCharacter("Mario", World.Tiles[MapWidth / 2, MapHeight / 2 + 1]);
+            AddCharacter("Lara", World.Tiles[MapWidth / 2 + 1, MapHeight / 2 + 1]);
+            AddCharacter("Bran", World.Tiles[MapWidth / 2 - 1, MapHeight / 2]);
+            AddCharacter("Grace", World.Tiles[MapWidth / 2, MapHeight / 2 - 1]);
         }
 
         private void AddCharacter(string name, Tile tile)
@@ -143,12 +157,17 @@ namespace LoM.Managers
             jobComponent.OnNewPathRequest += navComponent.OnNavigationRequest;
             jobComponent.VerifyJob += newCharacter.OnVerifyJob;
             jobComponent.OnJobWorked += newCharacter.OnJobWorked;
+            jobComponent.CheckRequirements += newCharacter.OnRequirementCheck;
+            jobComponent.OnTakeItemStack += newCharacter.OnPickupItemStack;
+
+            navComponent.OnNoPath += jobComponent.UnAssignJob;
             navComponent.OnAtTargetTile += jobComponent.DoJob;
+            World.OnWorldObjectPlaced += navComponent.OnMapChange; 
 
             World.Characters.Add(newCharacter);
         }
 
-        private void DropItemAt(Tile tile, string itemType, int amount)
+        public void DropItemAt(Tile tile, string itemType, int amount)
         {
             if (ContentChest.ItemData.ContainsKey(itemType) == false) return;
 
@@ -198,10 +217,7 @@ namespace LoM.Managers
         private void OnTileChanged(Tile obj)
         {
             if (obj?.WorldObject?.MovementCost != 0) return;
-
-            foreach (var character in World.Characters)
-            {
-            }
+            
         }
 
         private void OnWorldObjectPlaced(WorldObject worldObject)
@@ -427,8 +443,29 @@ namespace LoM.Managers
             _frameCounter.Update(deltaTime);
             InputManager.Update(deltaTime);
 
+            UpdateTime(deltaTime);
+
             if (_paused) return;
             World.Update(deltaTime);
+        }
+
+        private void UpdateTime(float deltaTime)
+        {
+            if (_isDay)
+                _time += 0.01f * deltaTime;
+            else if (_isNight)
+                _time -= 0.01f * deltaTime;
+
+            if (_time >= 1.0f && _isDay)
+            {
+                _isDay = false;
+                _isNight = true;
+            }
+            else if (_time <= 0.0f && _isNight)
+            {
+                _isDay = true;
+                _isNight = false;
+            }
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -472,10 +509,12 @@ namespace LoM.Managers
                     spriteBatch.Draw(ContentChest.GridSquare, new Vector2(tile.X * TileSize, tile.Y * TileSize),
                         Color.White);
 
-                if (tile.WorldObject != null)
+                if (tile.WorldObject != null
+                    && !tile.WorldObject.EmitsLight)
                     objects.Enqueue(tile);
 
-                if (tile.ItemStack != null)
+                if (tile.ItemStack != null &&
+                    tile.ItemStack.Amount > 0)
                     items.Enqueue(tile);
             }
 
@@ -551,7 +590,6 @@ namespace LoM.Managers
                             tile.Y * 32 + 16 - sprite.Height / 2), Color.White * 0.4f);
                 }
 
-
             var mouseX = Mouse.GetState().X;
             var mouseY = Mouse.GetState().Y;
 
@@ -572,13 +610,14 @@ namespace LoM.Managers
                                 new Rectangle(tile.X * TileSize, tile.Y * TileSize, TileSize, TileSize),
                                 Color.Pink * 0.6f);
             }
-
-
-            foreach (var c in World.Characters.OrderBy(character => character.Tile.Y)) DrawCharacter(spriteBatch, c);
+            
+            foreach (var c in World.Characters.OrderBy(character => character.Tile.Y))
+            {
+                DrawCharacter(spriteBatch, c);
+            }
 
             if (SelectedCharacter != null)
                 spriteBatch.Draw(ContentChest.HoverSquare, GetBoundsOfCharacter(SelectedCharacter), Color.White);
-
 
             spriteBatch.End();
         }

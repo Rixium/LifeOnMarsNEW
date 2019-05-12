@@ -1,32 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Remoting;
-using LoM.Constants;
 using LoM.Game;
 using LoM.Game.Build;
 using LoM.Game.Jobs;
 using LoM.Serialization.Data;
-using Microsoft.Xna.Framework;
 
 namespace LoM.Managers
 {
     public class JobManager
     {
-
-        private ItemManager _itemManager;
-        private readonly Dictionary<Character, List<Job>> _unreachables = new Dictionary<Character, List<Job>>();
         private readonly HashSet<Job> _activeJobs = new HashSet<Job>();
+        private readonly GameManager _gameManager;
         private readonly BuildManager _buildManager;
-
-        public Action OnJobsComplete;
-        public Action<Job> OnJobComplete;
+        private readonly ItemManager _itemManager;
 
         public float JobTime = 2f;
+        public Action<Job> OnJobComplete;
 
-        public JobManager(BuildManager buildManager, ItemManager itemManager)
+        public Action OnJobsComplete;
+        public Action OnNoJobsAvailable;
+
+        public JobManager(GameManager gameManager, BuildManager buildManager, ItemManager itemManager)
         {
+            _gameManager = gameManager;
             _buildManager = buildManager;
             _itemManager = itemManager;
+
+            OnNoJobsAvailable += CreateCleanupJobs;
         }
 
         public void AddJob(Job job)
@@ -125,17 +125,23 @@ namespace LoM.Managers
             if (job.Cancelled) return;
 
             if (job.JobType == JobType.Build)
+            {
                 jobTile.SetType(TileType.Ground);
+            }
             else if (job.JobType == JobType.DestroyTile)
+            {
                 jobTile.SetType(TileType.None);
+            }
             else if (job.JobType == JobType.DestroyWorldObject)
+            {
                 jobTile.RemoveWorldObject();
+            }
             else if (job.JobType == JobType.WorldObject)
             {
                 var newWorldObject = CreateWorldObject(job);
                 job.Tile.World.PlaceWorldObject(job.Tile, newWorldObject);
             }
-
+            
             OnJobComplete?.Invoke(job);
 
             if (_activeJobs.Count == 0)
@@ -157,23 +163,23 @@ namespace LoM.Managers
             if (buildTiles == null || buildTiles.Count == 0) return;
 
             var worldObjectPrototype = WorldObjectChest.WorldObjectPrototypes[_buildManager.BuildObject];
-            
-            
+
+
             foreach (var buildRequest in buildTiles)
             {
                 if (buildRequest.BuildFloor)
                 {
-                    CreateTileJobs(new List<BuildRequest>()
+                    CreateTileJobs(new List<BuildRequest>
                     {
                         buildRequest
                     });
                     continue;
                 }
-                
+
                 var tile = buildRequest.BuildTile;
 
                 var newWorldObject = worldObjectPrototype.Place(tile);
-                
+
                 AddJob(new Job
                 {
                     JobType = JobType.WorldObject,
@@ -185,10 +191,9 @@ namespace LoM.Managers
                     OnJobComplete = JobComplete,
                     OnJobCancelled = JobCancelled
                 });
-
             }
         }
-        
+
         public void OnTileChanged(Tile tile)
         {
         }
@@ -196,19 +201,30 @@ namespace LoM.Managers
         public Job RequestJob(Character character)
         {
             var nearestJob = GetJob();
-            if (nearestJob == null) return null;
+            if (nearestJob == null)
+            {
+                OnNoJobsAvailable?.Invoke();
+                return null;
+            }
 
             var nearestDistance = Math.Abs(character.Tile.X - nearestJob.Tile.X) +
                                   Math.Abs(character.Tile.Y - nearestJob.Tile.Y);
-            
+
+            if (nearestJob.Blacklist.Contains(character))
+            {
+                nearestJob = null;
+                nearestDistance = int.MaxValue;
+            }
+
             foreach (var job in _activeJobs)
             {
                 if (job.Assigned) continue;
                 if (job.JobType == JobType.Fetch) continue;
+                if (job.Blacklist.Contains(character)) continue;
                 if (job.Tile == null) continue;
 
                 var jobDistance = Math.Abs(character.Tile.X - job.Tile.X) +
-                    Math.Abs(character.Tile.Y - job.Tile.Y);
+                                  Math.Abs(character.Tile.Y - job.Tile.Y);
 
                 if (jobDistance > nearestDistance) continue;
                 nearestJob = job;
@@ -217,7 +233,7 @@ namespace LoM.Managers
             
             return nearestJob;
         }
-        
+
         public void OnFetchJobCancel(Job job)
         {
             job.Assigned = false;
@@ -237,11 +253,12 @@ namespace LoM.Managers
                 FetchItem = new FetchRequest
                 {
                     ItemType = requirements.Type,
-                    Amount = requirements.Amount,
+                    Amount = requirements.Amount
                 },
                 RequiredJobTime = 0,
                 OnJobComplete = JobComplete,
                 OnJobCancelled = OnFetchJobCancel,
+                OnCannotComplete = OnCannotCompleteFetchJob,
                 StandOnTile = true,
                 Tile = _itemManager.FindItem(requirements)
             };
@@ -253,5 +270,28 @@ namespace LoM.Managers
 
             return job;
         }
+
+        private void OnCannotCompleteFetchJob(Job job)
+        {
+            job.Tile.ItemStack.TotalAllocated -= job.FetchItem.Allocated;
+        }
+
+        public void ClearBlacklists()
+        {
+            foreach(var job in _activeJobs)
+                job.Blacklist.Clear();
+        }
+
+        public void CreateCleanupJobs()
+        {
+            foreach (var item in _itemManager.ItemStacks)
+            {
+                if (item.Tile?.WorldObject != null &&
+                    !item.Tile.WorldObject.StoresItems) continue;
+             
+            }
+                
+        }
+        
     }
 }

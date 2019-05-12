@@ -172,6 +172,9 @@
     <Content Include="Content\Data\Items\Items.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Content\Prototypes\Lamp.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\Prototypes\Door.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

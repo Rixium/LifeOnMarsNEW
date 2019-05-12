@@ -7,6 +7,7 @@
         WorldObject,
         DestroyWorldObject,
         Fetch,
-        Move
+        Move,
+        Store
     }
 }

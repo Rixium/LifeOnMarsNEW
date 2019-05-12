@@ -2,6 +2,7 @@
 using LoM.Game.Components;
 using LoM.Game.Items;
 using LoM.Game.Jobs;
+using LoM.Serialization.Data;
 using Microsoft.Xna.Framework;
 
 namespace LoM.Game
@@ -42,6 +43,9 @@ namespace LoM.Game
 
         public void SetTile(Tile newTile)
         {
+            if (Tile?.Character == this)
+                Tile.Character = null;
+
             Tile = newTile;
             Tile.Character = this;
         }
@@ -52,7 +56,7 @@ namespace LoM.Game
             if (itemRequirements == null) return true;
             if (CarriedItem == null) return false;
             if (CarriedItem.Item.Type != itemRequirements.Type) return false;
-            return CarriedItem.Amount > 0;
+            return CarriedItem.Amount >= itemRequirements.Amount;
         }
 
         public void OnJobWorked(Job job)
@@ -66,6 +70,28 @@ namespace LoM.Game
 
             if (CarriedItem.Amount <= 0)
                 CarriedItem = null;
+        }
+
+        public ItemRequirements OnRequirementCheck(ItemRequirements requirements)
+        {
+            var actualRequirements = new ItemRequirements
+            {
+                Amount = requirements.Amount,
+                Type = requirements.Type
+            };
+
+            if (CarriedItem != null && CarriedItem.Item.Type == actualRequirements.Type)
+                actualRequirements.Amount -= CarriedItem.Amount;
+
+            return actualRequirements;
+        }
+
+        public void OnPickupItemStack(ItemStack itemStack)
+        {
+            if (CarriedItem == null)
+                CarriedItem = itemStack;
+            else if (CarriedItem.Item.Type == itemStack.Item.Type)
+                CarriedItem.Amount += itemStack.Amount;
         }
     }
 }

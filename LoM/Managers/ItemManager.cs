@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Security;
 using LoM.Game;
 using LoM.Game.Items;
 using LoM.Serialization.Data;
@@ -8,12 +7,12 @@ namespace LoM.Managers
 {
     public class ItemManager
     {
-        
         public List<ItemStack> ItemStacks = new List<ItemStack>();
+        public List<Tile> Stockpiles = new List<Tile>();
 
-        public ItemManager()
+        public void OnStockpileCreated(Tile tile)
         {
-
+            Stockpiles.Add(tile);
         }
 
         public void AddItems(ItemStack itemStack)
@@ -41,6 +40,24 @@ namespace LoM.Managers
                 itemStack.Tile.ItemStack = null;
 
             ItemStacks.Remove(itemStack);
+        }
+
+        public void DeallocateAll()
+        {
+            foreach (var stack in ItemStacks)
+                stack.TotalAllocated = 0;
+        }
+
+        public Tile GetStockpile()
+        {
+            foreach (var stockpile in Stockpiles)
+            {
+                if (stockpile.ItemStack != null &&
+                    stockpile.ItemStack.SpaceLeft <= 0) continue;
+                return stockpile;
+            }
+
+            return null;
         }
     }
 }

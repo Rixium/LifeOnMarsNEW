@@ -11,9 +11,13 @@ namespace LoM.Game.Components
 
         private Stack<Tile> _path;
         public float MovementPercentage = 1.0f;
+
         public Action OnArrivedAtDestination;
+        public Action OnNavigation;
         public Action<float> OnAtTargetTile;
+        public Action OnNoPath;
         public Tile TargetTile;
+        public Tile EndTile;
 
         // For a more human-like navigation we can use next position to set a vector for whatever is using the navigation component,
         // This position can then update the position of the user.
@@ -74,6 +78,7 @@ namespace LoM.Game.Components
             MovementPercentage = 0;
             TargetTile = _path.Pop();
             Character.SetTile(TargetTile);
+            OnNavigation?.Invoke();
             
             var randomX = NextFloat(TargetTile.X - 0.2f, TargetTile.X + 0.2f);
             var randomY = NextFloat(TargetTile.Y - 0.2f, TargetTile.Y + 0.2f);
@@ -101,17 +106,23 @@ namespace LoM.Game.Components
 
         private void GetPath()
         {
-            var newPath = new TilePath(Character.Tile, TargetTile)
+            var newPath = new TilePath(Character.Tile, EndTile)
                 .FindPath(true);
             _path = newPath;
-
-            if (_path == null)
-                TargetTile = null;
+            if (_path != null) return;
+            OnNoPath?.Invoke();
         }
 
         public void OnNavigationRequest(Tile targetTile)
         {
-            TargetTile = targetTile;
+            EndTile = targetTile;
+            TargetTile = EndTile;
+            GetPath();
+        }
+
+        public void OnMapChange(WorldObject worldObject)
+        {
+            _path = null;
             GetPath();
         }
 

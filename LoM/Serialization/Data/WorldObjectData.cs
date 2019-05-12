@@ -12,6 +12,8 @@
         public float MovementCost;
         public bool DestroyOnPlace;
         public bool StoresItems;
+        public bool EmitsLight;
+        public bool BlocksLight;
         public RendererData Renderer;
         public BehaviourData Behaviour;
 

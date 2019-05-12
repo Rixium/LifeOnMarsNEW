@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using LoM.Constants;
+﻿using LoM.Constants;
 using LoM.Game;
 using LoM.Managers;
 using LoM.Util;
@@ -10,12 +9,12 @@ namespace LoM
 {
     public class Main : Microsoft.Xna.Framework.Game
     {
-        public ContentChest ContentChest;
+        private readonly GraphicsDeviceManager _graphics;
         private GameManager _gameManager;
         private MainMenu _mainMenu;
-        private readonly GraphicsDeviceManager _graphics;
 
         private SpriteBatch _spriteBatch;
+        public ContentChest ContentChest;
 
         public Main()
         {
@@ -24,7 +23,7 @@ namespace LoM
                 PreferredBackBufferWidth = Screen.Width,
                 PreferredBackBufferHeight = Screen.Height
             };
-            
+
             _graphics.ApplyChanges();
 
             Content.RootDirectory = "Content";
@@ -66,7 +65,7 @@ namespace LoM
         protected override void UnloadContent()
         {
         }
-        
+
         protected override void Update(GameTime gameTime)
         {
             var deltaTime = (float) gameTime.ElapsedGameTime.TotalSeconds;
@@ -82,7 +81,7 @@ namespace LoM
             GraphicsDevice.Clear(Color.Black);
 
             // TODO SCREEN CLASS TO HOLD AN INSTANCE OF GAME OR SCREEN.
-            if(_gameManager != null)
+            if (_gameManager != null)
                 _gameManager?.Draw(_spriteBatch);
             else
                 _mainMenu.Draw(_spriteBatch);

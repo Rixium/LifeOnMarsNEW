@@ -95,6 +95,8 @@ namespace LoM.Game
             var movementCost = prototype.MovementCost;
             var canRotate = prototype.CanRotate;
             var destroyOnPlace = prototype.DestroyOnPlace;
+            var emitsLight = prototype.EmitsLight;
+            var blocksLight = prototype.BlocksLight;
             var storesItems = prototype.StoresItems;
 
             if (WorldObjectPrototypes.ContainsKey(name))
@@ -105,7 +107,7 @@ namespace LoM.Game
 
             var worldObject =
                 WorldObject.CreatePrototype(name, hollowPlacement, mergeWithNeighbors, dragBuild, encloses,
-                    movementCost, canRotate, destroyOnPlace, storesItems, behaviour, renderer);
+                    movementCost, canRotate, destroyOnPlace, storesItems, emitsLight, blocksLight, behaviour, renderer);
             
             worldObject.ItemRequirements = prototype.ItemRequirements;
             WorldObjectPrototypes.Add(name, worldObject);

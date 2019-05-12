@@ -16,6 +16,7 @@ namespace LoM.Game
         public Action<Tile> OnTileChanged;
         public Action<ItemStack> OnItemStackChange;
         public Action<WorldObject> OnWorldObjectPlaced;
+        public Action<WorldObject> OnWorldObjectDestroyed;
 
         public Tile[,] Tiles;
 
@@ -30,7 +31,8 @@ namespace LoM.Game
             for (var y = 0; y < height; y++)
                 Tiles[x, y] = new Tile(x, y, this)
                 {
-                    OnTileChanged = TileChanged
+                    OnTileChanged = TileChanged,
+                    OnWorldObjectDestroyed = OnWorldObjectDestroyed
                 };
         }
 

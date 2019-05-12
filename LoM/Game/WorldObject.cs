@@ -27,6 +27,8 @@ namespace LoM.Game
         public bool HollowPlacement { get; set; }
         public bool MergesWithNeighbors { get; set; }
         public bool DragBuild { get; set; }
+        public bool BlocksLight { get; set; }
+        public bool EmitsLight { get; set; }
         public bool Encloses { get; set; }
         public float MovementCost { get; set; }
         public bool CanRotate { get; set; }
@@ -50,6 +52,8 @@ namespace LoM.Game
                 CanRotate = CanRotate,
                 MovementCost = MovementCost,
                 Renderer = Renderer?.Clone(),
+                EmitsLight = EmitsLight,
+                BlocksLight = BlocksLight,
                 DestroyOnPlace = DestroyOnPlace,
                 StoresItems = StoresItems
             };
@@ -86,7 +90,7 @@ namespace LoM.Game
         public static WorldObject CreatePrototype(string objectName, bool hollowPlacement, bool mergeWithNeighbors,
             bool dragBuild,
             bool encloses,
-            float movementCost, bool canRotate, bool destroyOnPlace, bool storesItems, IBehaviour behaviour, IRenderer renderer)
+            float movementCost, bool canRotate, bool destroyOnPlace, bool storesItems, bool emitsLight, bool blocksLight, IBehaviour behaviour, IRenderer renderer)
         {
             return new WorldObject
             {
@@ -99,6 +103,8 @@ namespace LoM.Game
                 CanRotate = canRotate,
                 DestroyOnPlace = destroyOnPlace,
                 StoresItems = storesItems,
+                EmitsLight = emitsLight,
+                BlocksLight = blocksLight,
                 Behaviour = behaviour,
                 Renderer = renderer
             };

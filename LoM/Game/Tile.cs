@@ -1,12 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using LoM.Game.Items;
 
 namespace LoM.Game
 {
     public class Tile
     {
+        public ItemStack ItemStack;
         public Action<Tile> OnTileChanged;
+        public Action<WorldObject> OnWorldObjectDestroyed;
 
         public Region Region;
 
@@ -21,17 +22,17 @@ namespace LoM.Game
             Type = TileType.None;
         }
 
-        public ItemStack ItemStack;
         public TileType Type { get; private set; }
         public WorldObject WorldObject { get; private set; }
         public World World { get; set; }
         public Character Character { get; set; }
-        
 
         public float MovementCost
         {
             get
             {
+                if (WorldObject?.Behaviour != null)
+                    return WorldObject.Behaviour.IsPassable() ? WorldObject.MovementCost : 5;
                 if (WorldObject != null)
                     return WorldObject.MovementCost;
                 return Type == TileType.None ? 5 : 1;
@@ -47,8 +48,8 @@ namespace LoM.Game
 
         public bool PlaceObject(WorldObject worldObject)
         {
-            if(WorldObject != null
-               && !worldObject.DestroyOnPlace) return false;
+            if (WorldObject != null
+                && !worldObject.DestroyOnPlace) return false;
 
             WorldObject = worldObject;
             OnTileChanged?.Invoke(this);
@@ -60,6 +61,7 @@ namespace LoM.Game
         {
             if (WorldObject == null) return;
 
+            OnWorldObjectDestroyed?.Invoke(WorldObject);
             WorldObject = null;
             OnTileChanged?.Invoke(this);
         }
@@ -106,6 +108,5 @@ namespace LoM.Game
             ItemStack = stack;
             return null;
         }
-        
     }
 }

@@ -14,6 +14,7 @@ namespace LoM.Game.Items
         public Item Item;
         public int MaxStack;
         public int TotalAllocated;
+        public int Reserved;
 
         public ItemStack(Item item, int initialAmount)
         {
@@ -21,7 +22,7 @@ namespace LoM.Game.Items
             Amount = initialAmount;
         }
 
-        public int SpaceLeft => MaxStack - Amount;
+        public int SpaceLeft => MaxStack - Amount - Reserved;
         public int Available => Amount - TotalAllocated;
 
         public bool AddToStack(int amount)
